@@ -1,4 +1,27 @@
 /**
+ * A lookup table of pitches
+ */
+var pitchTable = {
+    'c': 0,
+    'd': 2,
+    'e': 4,
+    'f': 5,
+    'g': 7,
+    'a': 9,
+    'b': 11
+}; 
+
+/**
+ * Work out the Midi pitch of a note
+ */
+var calculatePitch = function(pitch) {
+    var note = pitchTable[pitch.substring(0, 1)],
+        octave = pitch.substring(1);
+
+    return 12 + (12 * octave) + note;
+};
+
+/**
  * Calculate when a tree of notes will end
  */
 var endTime = function(time, expr) {
@@ -27,7 +50,7 @@ var compileWithTime = function (expr, time) {
         return [ 
             { 
                 tag: 'note',
-                pitch: expr.pitch, 
+                pitch: calculatePitch(expr.pitch), 
                 dur: expr.dur,
                 start: time
             }
@@ -128,7 +151,7 @@ var melody_mus_rest = {
         tag: 'seq',
         left: {
             tag: 'note',
-            pitch: 'a4',
+            pitch: 'c4',
             dur: 250 
         },
         right: { 
@@ -140,12 +163,12 @@ var melody_mus_rest = {
         tag: 'par',
         left: {
             tag: 'note',
-            pitch: 'c4',
+            pitch: 'e4',
             dur: 500 
         },
         right: { 
             tag: 'note',
-            pitch: 'd4',
+            pitch: 'g4',
             dur: 500 
         } 
     }

@@ -35,9 +35,13 @@ var endTime = function(time, expr) {
         // We need to get the length of the longest one
         return Math.max(endTime(time, expr.left), endTime(time, expr.right));
     }
-    else
+    else if (expr.tag === 'seq')
     {
         return endTime(endTime(time, expr.left), expr.right);
+    }
+    else if (expr.tag === 'repeat')
+    {
+        return endTime(time, expr.section) * expr.count;
     }
 };
 
@@ -74,6 +78,20 @@ var compileWithTime = function (expr, time) {
     else if (expr.tag === 'par')
     {
         return compileWithTime(expr.left, time).concat(compileWithTime(expr.right, time));
+    }
+    else if (expr.tag === 'repeat')
+    {
+        var constructed = [],
+            newTime = time;
+
+        //Forgive me, Functional Programming, for I have committed the sin of mutable state
+        for (var i = 0; i < expr.count; ++i)
+        {
+            constructed = constructed.concat(compileWithTime(expr.section, newTime));
+            newTime = endTime(newTime, expr.section);
+        }
+
+        return constructed;
     }
 };
 
@@ -174,6 +192,38 @@ var melody_mus_rest = {
     }
 };
 
+var melody_mus_repeat = { 
+    tag: 'seq',
+    left: {
+        tag: 'repeat',
+        section: {
+            tag: 'seq',
+            left: {
+                tag: 'note',
+                pitch: 'c4',
+                dur: 250 
+            },
+            right: { 
+                tag: 'rest',
+                dur: 250 
+            }
+        },
+        count: 3
+    },
+    right: {
+        tag: 'par',
+        left: {
+            tag: 'note',
+            pitch: 'e4',
+            dur: 500 
+        },
+        right: { 
+            tag: 'note',
+            pitch: 'g4',
+            dur: 500 
+        } 
+    }
+};
 console.log(melody_mus);
 console.log("\n");
 console.log(compile(melody_mus));
@@ -185,3 +235,7 @@ console.log("\n");
 console.log(melody_mus_rest);
 console.log("\n");
 console.log(compile(melody_mus_rest));
+console.log("\n");
+console.log(melody_mus_repeat);
+console.log("\n");
+console.log(compile(melody_mus_repeat));

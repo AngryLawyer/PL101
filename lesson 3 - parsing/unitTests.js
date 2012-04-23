@@ -45,3 +45,5 @@ assert.deepEqual( parse(";;lol comment\nx"), 'x' );
 
 // Assert comments with valid syntax inside
 assert.deepEqual( parse(";;lol comment (1, 2, 3)\n(x, y)"), ['x', 'y'] );
+
+// TODO: Look up Scheme features, apply them

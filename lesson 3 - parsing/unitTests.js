@@ -47,3 +47,6 @@ assert.deepEqual( parse(";;lol comment\nx"), 'x' );
 assert.deepEqual( parse(";;lol comment (1, 2, 3)\n(x, y)"), ['x', 'y'] );
 
 // TODO: Look up Scheme features, apply them
+
+// Assert strings
+assert.deepEqual( parse('(concat "This is a string" "This is (another) string")'), ["This is a string", "This is (another) string"]);

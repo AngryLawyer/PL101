@@ -1,35 +1,41 @@
+// Start
 start =
     whitespace* exp: expression whitespace*
         { return exp; }
 
+// Basic characters
 validchar = 
     [0-9a-zA-Z_?!+\-=@#$%^&*/.]
-
-atom =
-    chars:validchar+
-        { return chars.join(""); }
 
 space = 
     [ \t]
 
 standardspace = 
-    [ \n\t\r]
+    space
+  / [\n\r]
 
 endline = 
     [\n]
   / "\r\n"
+  / "\n\r"
 
 stringchar = 
     [()\[\]{};'\\/,]
   / space
   / validchar
 
-extendedchar = 
+commentchar = 
     ["]
   / stringchar
+
+// Objects
+
+atom =
+    chars:validchar+
+        { return chars.join(""); }
    
 comment = 
-    ";;" extendedchar* endline*
+    ";;" commentchar* endline*
 
 whitespace =
     comment

@@ -8,14 +8,15 @@ atom =
         { return chars.join(""); }
 
 space =
-    " "
-    / [\n\t\r]
+    [ \n\t\r]
 
 spacedAtom = 
     space* right: atom
         { return right; }
         
 expression =
-     spacedAtom
-   / space* [(] middle: expression+ space* [)]
+    spacedAtom
+  / space* ['] exp: expression
+        { return ['quote', exp]; }
+  / space* [(] middle: expression+ space* [)]
         { return middle; }

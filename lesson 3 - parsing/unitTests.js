@@ -38,7 +38,7 @@ assert.deepEqual( parse('( * \n(* 1\t2)(  * 1 2   \r\n  ))'), ['*', ['*', '1', '
 assert.deepEqual( parse("'x"), ['quote', 'x'] );
 
 // Assert nested quotes
-assert.deepEqual( parse("(('x) ('1 2 3)"), [['quote', 'x'], ['quote', ['1', '2', '3']]] );
+assert.deepEqual( parse("('x '(1 2 '3))"), [['quote', 'x'], ['quote', ['1', '2', ['quote', '3']]]] );
 
 // Assert comments
 assert.deepEqual( parse(";;lol comment\nx"), 'x' );
@@ -46,7 +46,7 @@ assert.deepEqual( parse(";;lol comment\nx"), 'x' );
 // Assert comments with valid syntax inside
 assert.deepEqual( parse(";;lol comment (1, 2, 3)\n(x, y)"), ['x', 'y'] );
 
-// TODO: Look up Scheme features, apply them
-
 // Assert strings
 assert.deepEqual( parse('(concat "This is a string" "This is (another) string")'), ["This is a string", "This is (another) string"]);
+
+console.log('----- All tests passed -----');

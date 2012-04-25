@@ -19,11 +19,15 @@ endline =
     [\n]
   / "\r\n"
 
-extendedchar = 
-    [()\[\]{};"',\\/]
+stringchar = 
+    [()\[\]{};'\\/,]
   / space
   / validchar
 
+extendedchar = 
+    ["]
+  / stringchar
+   
 comment = 
     ";;" extendedchar* endline*
 
@@ -31,9 +35,12 @@ whitespace =
     comment
   / standardspace
 
+string = 
+    ["] str: (stringchar / standardspace)* ["]
+        { return "\"" + str.join("") + "\""; }
         
 expression =
-    whitespace* right: atom
+    whitespace* right: (atom / string)
         { return right; }
   / whitespace* ['] exp: expression
         { return ['quote', exp]; }

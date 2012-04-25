@@ -47,6 +47,6 @@ assert.deepEqual( parse(";;lol comment\nx"), 'x' );
 assert.deepEqual( parse(";;lol comment (1, 2, 3)\n(x y)\n;;Comment\"ZING!\""), ['x', 'y'] );
 
 // Assert strings
-assert.deepEqual( parse('(concat "This is a string" "This is (another) string")'), ["This is a string", "This is (another) string"]);
+assert.deepEqual( parse('(concat "This is a string" "This is (another) string")'), ["concat", "\"This is a string\"", "\"This is (another) string\""]);
 
 console.log('----- All tests passed -----');

@@ -1,20 +1,31 @@
 start =
-    whitespace* expression whitespace*
-validchar
-    = [0-9a-zA-Z_?!+\-=@#$%^&*/.]
+    whitespace* exp: expression whitespace*
+        { return exp; }
+
+validchar = 
+    [0-9a-zA-Z_?!+\-=@#$%^&*/.]
 
 atom =
     chars:validchar+
         { return chars.join(""); }
+
+space = 
+    [ \t]
 
 standardspace = 
     [ \n\t\r]
 
 endline = 
     [\n]
+  / "\r\n"
+
+extendedchar = 
+    [()\[\]{};"',\\/]
+  / space
+  / validchar
 
 comment = 
-    ";;" .* endline
+    ";;" extendedchar* endline*
 
 whitespace =
     comment

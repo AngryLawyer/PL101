@@ -44,7 +44,7 @@ assert.deepEqual( parse("('x '(1 2 '3))"), [['quote', 'x'], ['quote', ['1', '2',
 assert.deepEqual( parse(";;lol comment\nx"), 'x' );
 
 // Assert comments with valid syntax inside
-assert.deepEqual( parse(";;lol comment (1, 2, 3)\n(x, y)"), ['x', 'y'] );
+assert.deepEqual( parse(";;lol comment (1, 2, 3)\n(x y)\n;;Comment\"ZING!\""), ['x', 'y'] );
 
 // Assert strings
 assert.deepEqual( parse('(concat "This is a string" "This is (another) string")'), ["This is a string", "This is (another) string"]);

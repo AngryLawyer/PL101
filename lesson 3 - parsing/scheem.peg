@@ -1,5 +1,5 @@
 start =
-    expression
+    whitespace* expression whitespace*
 validchar
     = [0-9a-zA-Z_?!+\-=@#$%^&*/.]
 
@@ -7,16 +7,25 @@ atom =
     chars:validchar+
         { return chars.join(""); }
 
-space =
+standardspace = 
     [ \n\t\r]
 
-spacedAtom = 
-    space* right: atom
-        { return right; }
+endline = 
+    [\n]
+
+comment = 
+    ";;" .* endline
+
+whitespace =
+    comment
+  / standardspace
+
         
 expression =
-    spacedAtom
-  / space* ['] exp: expression
+    whitespace* right: atom
+        { return right; }
+  / whitespace* ['] exp: expression
         { return ['quote', exp]; }
-  / space* [(] middle: expression+ space* [)]
+  / whitespace* [(] middle: expression+ whitespace* [)]
         { return middle; }
+

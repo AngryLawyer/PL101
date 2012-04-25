@@ -32,7 +32,7 @@ assert.deepEqual( parse('(* (* 1 2) (* 1 2))'), ['*', ['*', '1', '2'], ['*', '1'
 assert.deepEqual( parse('( * (* 1    2)    (  * 1 2     ))'), ['*', ['*', '1', '2'], ['*', '1', '2'] ] );
 
 // Assert newlines and tabs
-assert.deepEqual( parse('( * \n(* 1\t2)(  * 1 2     ))'), ['*', ['*', '1', '2'], ['*', '1', '2'] ] );
+assert.deepEqual( parse('( * \n(* 1\t2)(  * 1 2   \r\n  ))'), ['*', ['*', '1', '2'], ['*', '1', '2'] ] );
 
 // Assert basic quotes
 assert.deepEqual( parse("'x"), ['quote', 'x'] );

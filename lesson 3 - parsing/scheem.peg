@@ -7,11 +7,15 @@ atom =
     chars:validchar+
         { return chars.join(""); }
 
+space =
+    " "
+    / [\n\t\r]
+
 spacedAtom = 
-    left: " "* right: atom
+    space* right: atom
         { return right; }
         
 expression =
      spacedAtom
-   / " "* [(] middle: expression+ " "* [)]
+   / space* [(] middle: expression+ space* [)]
         { return middle; }

@@ -4,10 +4,27 @@ try using sol-fa?
 
 Set key X, otherwise assume C
 
-do/time/ re mi fa sol la te
+do re mi fa sol la te
 
-Rests?
+item[octave]/duration
+with defaults of 4 and 250
+
 breathe/time
 
-Octaves?
 Parallel?
+
+do re re mi
+do do do
+re re do
+me do me
+me
+me
+me
+do
+breathe
+do
+do
+
+repeat x
+
+end

@@ -1,0 +1,47 @@
+start =
+    _ item: (rest / note) _
+      {return item;}
+
+
+
+// Atoms
+
+rest = 
+    "breathe/" dur: [0-9]+
+        { return {tag: "rest", dur: parseInt(dur.join(""))}; }
+  / "breathe"
+        { return {tag: "rest", dur: 250}; }
+note =
+    note: noteWord "[" pitch: [1-9] "]/" dur: [0-9]+
+        { return {tag: "note", pitch: note.concat(pitch), dur: parseInt(dur.join(""))}; }
+  / note: noteWord "[" pitch: [1-9] "]"
+        { return {tag: "note", pitch: note.concat(pitch), dur: 250}; }
+  / note: noteWord "/" dur: [0-9]+
+        { return {tag: "note", pitch: note.concat("4"), dur: parseInt(dur.join(""))}; }
+  / note: noteWord
+        { return {tag: "note", pitch: note.concat("4"), dur: 250}; }
+
+noteWord = 
+    "do"
+        { return "c"; }
+  / "re"
+        { return "d"; }
+  / "mi"
+        { return "e"; }
+  / "fa"
+        { return "f"; }
+  / "sol"
+        { return "g"; }
+  / "la"
+        { return "a"; }
+  / "ti"
+        { return "b"; }
+
+newLine = 
+    ("\r\n" / "\n\r" / "\n" / "\r")+
+
+whiteSpace =
+    (" " / [\t])+
+
+_ = 
+  (newLine / whiteSpace)*

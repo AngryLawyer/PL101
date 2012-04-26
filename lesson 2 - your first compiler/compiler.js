@@ -45,6 +45,7 @@ var endTime = function(time, expr) {
     }
 };
 
+
 /**
  * Add starting times to each 
  */
@@ -62,13 +63,7 @@ var compileWithTime = function (expr, time) {
     }
     else if (expr.tag === 'rest')
     {
-        return [
-            {
-                tag: 'rest',
-                dur: expr.dur,
-                start: time
-            }
-        ];
+        return [];
     }
     else if (expr.tag === 'seq')
     {

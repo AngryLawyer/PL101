@@ -1,0 +1,13 @@
+General plan:
+
+try using sol-fa?
+
+Set key X, otherwise assume C
+
+do/time/ re mi fa sol la te
+
+Rests?
+breathe/time
+
+Octaves?
+Parallel?

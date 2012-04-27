@@ -15,7 +15,6 @@ console.log('----- Unit tests -----');
 
 //Check single notes are something sensible
 assert.deepEqual( parse('do', 'note'), {tag: 'note', pitch: 'c4', dur: 250});
-assert.deepEqual( parse('do\n', 'note'), {tag: 'note', pitch: 'c4', dur: 250});
 assert.deepEqual( parse('re', 'note'), {tag: 'note', pitch: 'd4', dur: 250});
 assert.deepEqual( parse('mi', 'note'), {tag: 'note', pitch: 'e4', dur: 250});
 assert.deepEqual( parse('fa', 'note'), {tag: 'note', pitch: 'f4', dur: 250});
@@ -32,13 +31,19 @@ assert.deepEqual( parse('breathe', 'rest'), {tag: 'rest', dur: 250});
 assert.deepEqual( parse('breathe/500', 'rest'), {tag: 'rest', dur: 500});
 
 //Sequences
-assert.deepEqual( parse('do\nre'), {tag: 'seq', left: {tag: 'note', pitch: 'd4', dur: 250}, right: {tag: 'note', pitch: 'c4', dur:250}});
+assert.deepEqual( parse('do\nre\n'), {tag: 'seq', left: {tag: 'note', pitch: 'c4', dur: 250}, right: {tag: 'note', pitch: 'd4', dur:250}});
 
 //Comments
 assert.deepEqual( parse('do%LOL'), {tag: 'note', pitch: 'c4', dur: 250});
 assert.deepEqual( parse('do %LOL'), {tag: 'note', pitch: 'c4', dur: 250});
 assert.deepEqual( parse('re %LOL do'), {tag: 'note', pitch: 'd4', dur: 250});
 assert.deepEqual( parse('re %LOL\ndo'), {tag: 'seq', left: {tag: 'note', pitch: 'd4', dur: 250}, right: {tag: 'note', pitch: 'c4', dur:250}});
+
+//Parallel
+assert.deepEqual( parse('do/500 mi/500 sol/500', 'par'), {tag: 'par', left: {tag: 'note', pitch: 'c4', dur: 500}, right: {tag: 'par', left: {tag: 'note', pitch: 'e4', dur: 500}, right: {tag: 'note', pitch: 'g4', dur: 500}}});
+
+//Loops
+//TODO: Unit test loops. Don't forget nesting
 
 
 console.log('----- All tests passed -----');

@@ -1,16 +1,31 @@
 start =
-    _ item: (rest / note) _
+    _ item: seq _
       {return item;}
 
 
 
-// Atoms
+seq =
+    left: repeat newLine+ whiteSpace* right: seq
+        { return {tag: "seq", left: left, right: right}; }
+  / repeat
+
+repeat = 
+    "loop" whiteSpace+ dur: ([1-9][0-9]*) newLine _ sec: seq newLine+ "end"
+        {return {tag: "repeat", section: sec, count: dur} ;}
+  / par
+
+par =
+    left: rest whiteSpace+ right: par
+        { return {tag: "par", left: left, right: right}; }
+  / rest
 
 rest = 
     "breathe/" dur: [0-9]+
         { return {tag: "rest", dur: parseInt(dur.join(""))}; }
   / "breathe"
         { return {tag: "rest", dur: 250}; }
+  / note
+
 note =
     note: noteWord "[" pitch: [1-9] "]/" dur: [0-9]+
         { return {tag: "note", pitch: note.concat(pitch), dur: parseInt(dur.join(""))}; }
@@ -38,10 +53,13 @@ noteWord =
         { return "b"; }
 
 newLine = 
-    ("\r\n" / "\n\r" / "\n" / "\r")+
+    whiteSpace* ("\r\n" / "\n\r" / "\n" / "\r" / comment)+
 
 whiteSpace =
     (" " / [\t])+
+
+comment = 
+    whiteSpace* "%" (" " / [!-~])* 
 
 _ = 
   (newLine / whiteSpace)*

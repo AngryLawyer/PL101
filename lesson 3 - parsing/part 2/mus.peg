@@ -2,16 +2,14 @@ start =
     _ item: seq _
       {return item;}
 
-
-
 seq =
     left: repeat newLine+ whiteSpace* right: seq
         { return {tag: "seq", left: left, right: right}; }
   / repeat
 
 repeat = 
-    "loop" whiteSpace+ dur: ([1-9][0-9]*) newLine _ sec: seq newLine+ "end"
-        {return {tag: "repeat", section: sec, count: dur} ;}
+    "loop" whiteSpace+ dur: ([1-9][0-9]*) newLine _ sec: seq _ "end" newLine*
+        {return {tag: "repeat", section: sec, count: parseInt(dur.join(""))} ;}
   / par
 
 par =

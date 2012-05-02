@@ -182,10 +182,40 @@ suite('variables', function() {
             evalScheem(['set!', 'x', 10], env);
         }).to.throw();
     });
+
+    //Read
+    test('read', function() {
+        var env = {'x': 20};
+        
+        assert.deepEqual(
+            evalScheem('x', env),
+            20
+        );
+    });
 });
 
 suite('begin', function() {
-    //TODO: Apply
+
+    test('single begin', function() {
+        assert.deepEqual(
+            evalScheem(['begin', 4], {}),
+            4
+        );
+    });
+
+    test('multi begin', function() {
+        assert.deepEqual(
+            evalScheem(['begin', 4, 5, 6], {}),
+            6
+        );
+    });
+
+    test('preserve', function() {
+        assert.deepEqual(
+            evalScheem(['begin', ['define', 'x', 10], 'x'], {}),
+            10
+        );
+    });
 });
 
 suite('quote', function() {
@@ -219,9 +249,79 @@ suite('quote', function() {
 });
 
 suite('comparators', function() {
-    //TODO
+
+    test('= true', function() {
+        assert.deepEqual(
+            evalScheem(['=', 3, 3], {}),
+            '#t'
+        );
+    });
+
+    test('= false', function() {
+        assert.deepEqual(
+            evalScheem(['=', 3, 4], {}),
+            '#f'
+        );
+    });
+
+    test('< true', function() {
+        assert.deepEqual(
+            evalScheem(['<', 3, 4], {}),
+            '#t'
+        );
+    });
+
+    test('< false', function() {
+        assert.deepEqual(
+            evalScheem(['<', 3, 3], {}),
+            '#f'
+        );
+    });
+
+    test('> true', function() {
+        assert.deepEqual(
+            evalScheem(['>', 4, 3], {}),
+            '#t'
+        );
+    });
+
+    test('> false', function() {
+        assert.deepEqual(
+            evalScheem(['>', 3, 3], {}),
+            '#f'
+        );
+    });
+
+    test('<= true', function() {
+        assert.deepEqual(
+            evalScheem(['<=', 3, 3], {}),
+            '#t'
+        );
+    });
+
+    test('<= false', function() {
+        assert.deepEqual(
+            evalScheem(['<=', 3, 2], {}),
+            '#f'
+        );
+    });
+
+    test('>= true', function() {
+        assert.deepEqual(
+            evalScheem(['>=', 3, 3], {}),
+            '#t'
+        );
+    });
+
+    test('>= false', function() {
+        assert.deepEqual(
+            evalScheem(['>=', 2, 3], {}),
+            '#f'
+        );
+    });
+    //TODO: If, Not
 });
 
-suite('if', function() {
+suite('lists', function() {
     //TODO
 });

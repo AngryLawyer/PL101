@@ -319,9 +319,42 @@ suite('comparators', function() {
             '#f'
         );
     });
-    //TODO: If, Not
+
+    test('if true', function() {
+        assert.deepEqual(
+            evalScheem(['if', ['>', 3, 2], ['quote', 'first'], ['quote', 'second']], {}),
+            'first'
+        );
+    });
+
+    test('if false', function() {
+        assert.deepEqual(
+            evalScheem(['if', ['>', 2, 3], ['quote', 'first'], ['quote', 'second']], {}),
+            'second'
+        );
+    });
 });
 
 suite('lists', function() {
-    //TODO
+
+    test('cons', function() {
+        assert.deepEqual(
+            evalScheem(['cons', 3, ['quote', [4, 5]]], {}),
+            [3, 4, 5]
+        );
+    });
+
+    test('car', function() {
+        assert.deepEqual(
+            evalScheem(['car', ['quote', [4, 5]]], {}),
+            4
+        );
+    });
+
+    test('cdr', function() {
+        assert.deepEqual(
+            evalScheem(['cdr', ['quote', [4, 5]]], {}),
+            [5]
+        );
+    });
 });

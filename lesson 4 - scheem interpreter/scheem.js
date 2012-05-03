@@ -22,6 +22,8 @@ var evalScheem = function (expr, env) {
     }
     // Strings are variable references
     if (typeof expr === 'string') {
+        if (expr in env === false)
+                throw new Error("Undefined variable "+expr);
         return env[expr];
     }
 
@@ -146,10 +148,16 @@ var evalScheem = function (expr, env) {
             return secondHalf;
         case 'car':
             ensureArgumentCount(expr, 1);
-            return evalScheem(expr[1], env)[0];
+            var firstArg = evalScheem(expr[1], env);
+            if (typeof firstArg !== 'object' || Array.isArray(firstArg) !== true)
+                throw new Error('Type error');
+            return firstArg[0];
         case 'cdr':
             ensureArgumentCount(expr, 1);
-            return evalScheem(expr[1], env).slice(1);
+            var firstArg = evalScheem(expr[1], env);
+            if (typeof firstArg !== 'object' || Array.isArray(firstArg) !== true)
+                throw new Error('Type error');
+            return firstArg.slice(1);
     }
 };
 

@@ -54,6 +54,12 @@ suite('basic operations', function() {
         );
     });
 
+    test('invalid addition', function() {
+        expect(function() {
+            evalScheem(['+', 1], {});
+        }).to.throw();
+    });
+
     test('subtraction', function() {
         assert.deepEqual(
             evalScheem(['-', 2, 1], {}), 
@@ -73,6 +79,12 @@ suite('basic operations', function() {
             evalScheem(['-', 5, 2, 3], {}), 
             0
         );
+    });
+
+    test('invalid addition', function() {
+        expect(function() {
+            evalScheem(['-', 1], {});
+        }).to.throw();
     });
 
     test('multiplication', function() {
@@ -96,6 +108,12 @@ suite('basic operations', function() {
         );
     });
 
+    test('invalid multiplication', function() {
+        expect(function() {
+            evalScheem(['*', 1], {});
+        }).to.throw();
+    });
+
     test('division', function() {
         assert.deepEqual(
             evalScheem(['/', 6, 2], {}), 
@@ -117,6 +135,12 @@ suite('basic operations', function() {
         );
     });
 
+    test('invalid division', function() {
+        expect(function() {
+            evalScheem(['/', 1], {});
+        }).to.throw();
+    });
+
     test('modulo', function() {
         assert.deepEqual(
             evalScheem(['mod', 5, 2], {}), 
@@ -136,6 +160,12 @@ suite('basic operations', function() {
             evalScheem(['mod', 10, 7, 2], {}), 
             1
         );
+    });
+
+    test('invalid modulo', function() {
+        expect(function() {
+            evalScheem(['mod', 1], {});
+        }).to.throw();
     });
 });
 
@@ -192,6 +222,12 @@ suite('variables', function() {
             20
         );
     });
+
+    test('read invalid', function() {
+        expect(function() {
+            evalScheem('x', {});
+        }).to.throw();
+    });
 });
 
 suite('begin', function() {
@@ -215,6 +251,12 @@ suite('begin', function() {
             evalScheem(['begin', ['define', 'x', 10], 'x'], {}),
             10
         );
+    });
+
+    test('invalid begin', function() {
+        expect(function() {
+            evalScheem(['begin'], {});
+        }).to.throw();
     });
 });
 
@@ -245,6 +287,12 @@ suite('quote', function() {
             evalScheem(['quote', [1, 2, ['quote', 3, 4]]], {}),
             [1, 2, ['quote', 3, 4]]
         );
+    });
+
+    test('invalid quote', function() {
+        expect(function() {
+            evalScheem(['quote', 1, 2], {});
+        }).to.throw();
     });
 });
 
@@ -333,6 +381,17 @@ suite('comparators', function() {
             'second'
         );
     });
+
+    var comparators = ['=', '<', '<=', '>=', '>', 'if'];
+
+    for(var i in comparators)
+    {
+        test('invalid '+comparators[i], function() {
+            expect(function() {
+                evalScheem([comparators[i], 1, 2, 3, 4], {});
+            }).to.throw();
+        });
+    }
 });
 
 suite('lists', function() {
@@ -344,6 +403,18 @@ suite('lists', function() {
         );
     });
 
+    test('invalid cons (args)', function() {
+        expect(function() {
+            evalScheem(['cons', 3, ['quote', [4, 5]], 4], {});
+        }).to.throw();
+    });
+
+    test('invalid cons (type)', function() {
+        expect(function() {
+            evalScheem(['cons', 3, 4], {});
+        }).to.throw();
+    });
+
     test('car', function() {
         assert.deepEqual(
             evalScheem(['car', ['quote', [4, 5]]], {}),
@@ -351,10 +422,34 @@ suite('lists', function() {
         );
     });
 
+    test('invalid car (args)', function() {
+        expect(function() {
+            evalScheem(['car', ['quote', [4, 5]], 6], {});
+        }).to.throw();
+    });
+
+    test('invalid car (type)', function() {
+        expect(function() {
+            evalScheem(['car', 6], {});
+        }).to.throw();
+    });
+
     test('cdr', function() {
         assert.deepEqual(
             evalScheem(['cdr', ['quote', [4, 5]]], {}),
             [5]
         );
+    });
+
+    test('invalid cdr (args)', function() {
+        expect(function() {
+            evalScheem(['cdr', ['quote', [4, 5]], 6], {});
+        }).to.throw();
+    });
+
+    test('invalid cdr (type)', function() {
+        expect(function() {
+            evalScheem(['cdr', 6], {});
+        }).to.throw();
     });
 });

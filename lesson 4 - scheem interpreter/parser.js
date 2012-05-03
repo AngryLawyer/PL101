@@ -702,3 +702,5 @@ SCHEEM = (function(){
   
   return result;
 })();
+
+module.exports.SCHEEM = SCHEEM;

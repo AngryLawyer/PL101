@@ -2,7 +2,8 @@ if (typeof module !== 'undefined') {
     // In Node load required modules
     var assert = require('chai').assert;
     var evalScheem = require('../scheem').evalScheem;
-    var SCHEEM= require('../parser').SCHEEM;
+    var evalScheemString = require('../scheem').evalScheemString;
+    var SCHEEM = require('../parser').SCHEEM;
     var expect = require('chai').expect;
 
 } else {
@@ -487,6 +488,42 @@ suite('parse', function() {
         assert.deepEqual(
             SCHEEM.parse('\'2'),
             ['quote', 2]
+        );
+    });
+});
+
+suite('evalScheemString', function() {
+    test('a number', function() {
+        assert.deepEqual(
+            evalScheemString('42'),
+            42
+        );
+    });
+    test('a variable', function() {
+        assert.deepEqual(
+            evalScheemString('(begin (define x 10) x)'),
+            10
+        );
+    });
+
+    test('basic operation', function() {
+        assert.deepEqual(
+            evalScheemString('(+ 1 2)'),
+            3
+        );
+    });
+
+    test('nested operation', function() {
+        assert.deepEqual(
+            evalScheemString('(+ (* 3 4) 2)'),
+            14
+        );
+    });
+
+    test('quoted operation', function() {
+        assert.deepEqual(
+            evalScheemString('\'(+ 2 3)'),
+            ['+', 2, 3]
         );
     });
 });

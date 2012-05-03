@@ -1,3 +1,7 @@
+if (typeof module !== 'undefined') {
+    var SCHEEM = require('./parser').SCHEEM;
+}
+
 var ensureArgumentCount = function(expr, count, is_minimum) {
 
     var length = expr.length - 1; //One less due to the root argument
@@ -23,7 +27,7 @@ var evalScheem = function (expr, env) {
     // Strings are variable references
     if (typeof expr === 'string') {
         if (expr in env === false)
-                throw new Error("Undefined variable "+expr);
+            throw new Error("Undefined variable "+expr);
         return env[expr];
     }
 
@@ -161,4 +165,9 @@ var evalScheem = function (expr, env) {
     }
 };
 
+var evalScheemString = function(Scheem) {
+    return evalScheem(SCHEEM.parse(Scheem), {});
+};
+
 module.exports.evalScheem = evalScheem;
+module.exports.evalScheemString = evalScheemString;

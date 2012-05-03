@@ -126,7 +126,7 @@ suite('basic operations', function() {
 
     test('nested modulo', function() {
         assert.deepEqual(
-            evalScheem(['mod', 5, ['%', 5, 3]], {}), 
+            evalScheem(['mod', 5, ['mod', 5, 3]], {}), 
             1
         );
     });
@@ -150,7 +150,7 @@ suite('variables', function() {
         );
 
         assert.deepEqual(
-            evalScheem(env, {'x': 10}),
+            {'x': 10},
             env
         );
     });
@@ -171,7 +171,7 @@ suite('variables', function() {
         );
 
         assert.deepEqual(
-            evalScheem(env, {'x': 10}),
+            {'x': 10},
             env
         );
     });

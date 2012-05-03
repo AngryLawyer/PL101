@@ -32,7 +32,12 @@ commentchar =
 
 atom =
     chars:validchar+
-        { return chars.join(""); }
+        {
+            var string = chars.join("");
+            if (isNaN(string))
+                return string;
+            return parseFloat(string);
+        }
    
 comment = 
     ";;" commentchar* endline*

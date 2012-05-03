@@ -2,6 +2,7 @@ if (typeof module !== 'undefined') {
     // In Node load required modules
     var assert = require('chai').assert;
     var evalScheem = require('../scheem').evalScheem;
+    var SCHEEM= require('../parser').SCHEEM;
     var expect = require('chai').expect;
 
 } else {
@@ -451,5 +452,41 @@ suite('lists', function() {
         expect(function() {
             evalScheem(['cdr', 6], {});
         }).to.throw();
+    });
+});
+
+suite('parse', function() {
+    test('a number', function() {
+        assert.deepEqual(
+            SCHEEM.parse('42'),
+            42
+        );
+    });
+    test('a variable', function() {
+        assert.deepEqual(
+            SCHEEM.parse('x'),
+            'x'
+        );
+    });
+
+    test('basic operation', function() {
+        assert.deepEqual(
+            SCHEEM.parse('(+ 1 2)'),
+            ['+', 1, 2]
+        );
+    });
+
+    test('nested operation', function() {
+        assert.deepEqual(
+            SCHEEM.parse('(+ (* 3 4) 2)'),
+            ['+', ['*', 3, 4], 2]
+        );
+    });
+
+    test('quoted operation', function() {
+        assert.deepEqual(
+            SCHEEM.parse('\'2'),
+            ['quote', 2]
+        );
     });
 });

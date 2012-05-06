@@ -174,7 +174,7 @@ suite('basic operations', function() {
 suite('variables', function() {
     
     test('define valid', function() {
-        var env = {name: null, value: null, outer: null}
+        var env = {name: null, value: null, outer: null};
 
         assert.deepEqual(
             evalScheem(['define', 'x', 10], env),
@@ -462,8 +462,21 @@ suite('lists', function() {
 
 suite('functions', function() {
 
-    test('single argument application (anonymous)', function() {
+    test('single argument application', function() {
+        var env = {name: 'x', value: function(x) { return x + 1; }, outer: null};
+
         assert.deepEqual(
+            evalScheem(['x', 1], env),
+            2
+        );
+    });
+
+    test('setting a function', function() {
+        var env = {name: null, value: null, outer: null};
+
+        assert.deepEqual(
+            evalScheem(['x', 1], env),
+            2
         );
     });
 });

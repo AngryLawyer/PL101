@@ -258,6 +258,8 @@ suite('begin', function() {
     });
 
     test('invalid begin', function() {
+        var env = {name: null, value: null, outer: null};
+
         expect(function() {
             evalScheem(['begin'], env);
         }).to.throw();
@@ -458,6 +460,14 @@ suite('lists', function() {
     });
 });
 
+suite('functions', function() {
+
+    test('single argument application (anonymous)', function() {
+        assert.deepEqual(
+        );
+    });
+});
+
 suite('parse', function() {
     test('a number', function() {
         assert.deepEqual(
@@ -529,3 +539,4 @@ suite('evalScheemString', function() {
         );
     });
 });
+

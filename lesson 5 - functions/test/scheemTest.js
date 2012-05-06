@@ -174,28 +174,28 @@ suite('basic operations', function() {
 suite('variables', function() {
     
     test('define valid', function() {
-        var env = {};
-        
+        var env = {name: null, value: null, outer: null}
+
         assert.deepEqual(
             evalScheem(['define', 'x', 10], env),
             0
         );
 
         assert.deepEqual(
-            {'x': 10},
+            {name: 'x', value: 10, outer: {name: null, value: null, outer: null}},
             env
         );
     });
 
     test('define invalid', function() {
-        var env = {'x': 10};
+        var env = {name: 'x', value: 10, outer: null};
         expect(function() {
             evalScheem(['define', 'x', 10], env);
         }).to.throw();
     });
 
     test('set! valid', function() {
-        var env = {'x': 20};
+        var env = {name: 'x', value: 20, outer: null};
         
         assert.deepEqual(
             evalScheem(['set!', 'x', 10], env),
@@ -203,7 +203,7 @@ suite('variables', function() {
         );
 
         assert.deepEqual(
-            {'x': 10},
+            {name: 'x', value: 10, outer: null},
             env
         );
     });
@@ -217,11 +217,11 @@ suite('variables', function() {
 
     //Read
     test('read', function() {
-        var env = {'x': 20};
+        var env = {name: 'x', value: 10, outer: null};
         
         assert.deepEqual(
             evalScheem('x', env),
-            20
+            10
         );
     });
 
@@ -249,15 +249,17 @@ suite('begin', function() {
     });
 
     test('preserve', function() {
+        var env = {name: null, value: null, outer: null};
+
         assert.deepEqual(
-            evalScheem(['begin', ['define', 'x', 10], 'x'], {}),
+            evalScheem(['begin', ['define', 'x', 10], 'x'], env),
             10
         );
     });
 
     test('invalid begin', function() {
         expect(function() {
-            evalScheem(['begin'], {});
+            evalScheem(['begin'], env);
         }).to.throw();
     });
 });

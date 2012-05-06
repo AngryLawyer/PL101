@@ -18,6 +18,49 @@ var ensureArgumentCount = function(expr, count, is_minimum) {
     }
 }
 
+var add_binding = function (env, v, val) {
+
+    env.outer = {
+        name: env.name,
+        value: env.value,
+        outer: env.outer
+    };
+    
+    env.name = v;
+    env.value = val;
+};
+
+var update = function (env, v, val) {
+    if (env.name === v)
+    {
+        env.value = val;
+    }
+    else
+    {
+        if (env.outer !== null)
+        {
+            update(env.outer, v, val);
+        }
+        else
+        {
+            throw new Error('Undefined variable '+v);
+        }
+    }
+};
+
+var lookup = function (env, v) {
+    while(env !== null && env.name !== v)
+    {
+        env = env.outer;
+    }
+    if (env)
+    {
+        return env.value;
+    }
+
+    throw new Error('Undefined variable '+v);
+};
+
 var evalScheem = function (expr, env) {
 
     // Numbers evaluate to themselves
@@ -26,12 +69,8 @@ var evalScheem = function (expr, env) {
     }
     // Strings are variable references
     if (typeof expr === 'string') {
-        if (expr in env === false)
-            throw new Error("Undefined variable "+expr);
-        return env[expr];
+        return lookup(env, expr);
     }
-
-    if (expr === 'error') throw('Error');
 
     switch (expr[0]) {
         case '=':
@@ -83,17 +122,19 @@ var evalScheem = function (expr, env) {
             return result;
         case 'define':
             ensureArgumentCount(expr, 2);
-            if (expr[1] in env === false)
-                env[expr[1]] = evalScheem(expr[2], env);
-            else
-                throw new Error("Attempting to redefine variable");
+            //Check that we're not destroying an extant variable
+            if (env !== null)
+            {
+                if (env.name === expr[1])
+                {
+                    throw new Error("Attempting to redefine variable "+expr[1]);
+                }
+            }
+            add_binding(env, expr[1], evalScheem(expr[2], env));
             return 0;
         case 'set!':
             ensureArgumentCount(expr, 2);
-            if (expr[1] in env === true)
-                env[expr[1]] = evalScheem(expr[2], env);
-            else
-                throw new Error("Attempting to set undefined variable");
+            update(env, expr[1], evalScheem(expr[2], env));
             return 0;
         case 'begin':
             ensureArgumentCount(expr, 1, true);
@@ -162,11 +203,28 @@ var evalScheem = function (expr, env) {
             if (typeof firstArg !== 'object' || Array.isArray(firstArg) !== true)
                 throw new Error('Type error');
             return firstArg.slice(1);
+        case 'lambda-one':
+            return function(param) {
+                return evalScheem(expr[2], {
+                    name: expr[1],
+                    value: param,
+                    outer: env
+                });
+            };
+        default:
+            // Simple application
+            var func = evalScheem(expr[0], env);
+            var arg = evalScheem(expr[1], env);
+            return func(arg);
     }
 };
 
 var evalScheemString = function(Scheem) {
-    return evalScheem(SCHEEM.parse(Scheem), {});
+    return evalScheem(SCHEEM.parse(Scheem), {
+        name: null,
+        value: null,
+        outer: null
+    });
 };
 
 module.exports.evalScheem = evalScheem;

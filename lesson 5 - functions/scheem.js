@@ -20,6 +20,11 @@ var ensureArgumentCount = function(expr, count, is_minimum) {
 
 var lookup = function (env, v) {
 
+    if (env === undefined)
+    {
+        console.log(v);
+    }
+
     if ('bindings' in env)
     {
         if (v in env.bindings)
@@ -187,11 +192,11 @@ var evalScheem = function (expr, env) {
             return '#f';
         case 'if':
             ensureArgumentCount(expr, 3);
-            if (evalScheem(expr[1]) === '#t')
+            if (evalScheem(expr[1], env) === '#t')
             {
-                return evalScheem(expr[2]);
+                return evalScheem(expr[2], env);
             }
-            return evalScheem(expr[3]);
+            return evalScheem(expr[3], env);
         case 'cons':
             ensureArgumentCount(expr, 2);
             var secondHalf = evalScheem(expr[2], env);
@@ -222,6 +227,20 @@ var evalScheem = function (expr, env) {
                 var bindings = {};
                 bindings[expr[1]] = param;
                 return evalScheem(expr[2], {
+                    bindings: bindings,
+                    outer: env
+                });
+            };
+        case 'lambda':
+            return function() {
+                //Take our middle
+                var bindings = {};
+                for (var i in expr[1])
+                {
+                    bindings[expr[1][i]] = arguments[i];
+                }
+
+                return evalScheem(expr[expr.length - 1], {
                     bindings: bindings,
                     outer: env
                 });

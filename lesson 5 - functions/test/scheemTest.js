@@ -264,6 +264,15 @@ suite('begin', function() {
         );
     });
 
+    test('preserve part 2', function() {
+        var env = {};
+
+        assert.deepEqual(
+            evalScheem(['begin', ['define', 'x', 10], ['+', 'x', 5]], env),
+            15
+        );
+    });
+
     test('invalid begin', function() {
         var env = {};
 
@@ -395,6 +404,27 @@ suite('comparators', function() {
         );
     });
 
+    test('if with variables', function() {
+        assert.deepEqual(
+            evalScheem(
+                ['begin', 
+                    ['define',
+                        'x', 
+                        10
+                    ],
+                    ['if', 
+                        ['=', 
+                            'x', 
+                            2
+                        ],
+                        ['quote', 'same'],
+                        ['quote', 'different']
+                    ]
+                ], {}),
+            'different'
+        );
+    });
+
     var comparators = ['=', '<', '<=', '>=', '>', 'if'];
 
     for(var i in comparators)
@@ -523,6 +553,98 @@ suite('functions', function() {
             15
         );
     });
+
+    
+    test('lambda', function() {
+        assert.deepEqual(
+            evalScheem([['lambda', ['x'], ['+', 'x', 1]], 1], {}), 
+            2
+        );
+    });
+
+    test('lambda 2 args', function() {
+        assert.deepEqual(
+            evalScheem([['lambda', ['x', 'y'], ['+', 'x', 'y']], 2, 3], {}), 
+            5
+        );
+    });
+
+    test('lambda in define', function() {
+        assert.deepEqual(
+            evalScheem(['begin', ['define', 'magic', ['lambda', ['x', 'y'], ['+', 'x', 'y']]], ['magic', 2, 3]], {}), 
+            5
+        );
+    });
+
+    test('complex lambda in define', function() {
+        assert.deepEqual(
+            evalScheem(
+                ['begin', 
+                    ['define', 
+                        'magic',
+                        ['lambda-one', 
+                            ['x'],
+                            ['if', 
+                                ['=', 
+                                    'x',
+                                    10
+                                ],
+                                ['quote', 'it\'s 10'],
+                                ['quote', 'it\'s not 10']
+                            ]
+                        ]
+                    ], 
+                    ['magic', 2]
+                ], {}), 
+            'it\'s not 10'
+        );
+    });
+
+    test('lambda takes function', function() {
+        assert.deepEqual(
+            evalScheem(
+                ['begin', 
+                    ['define', 'magic', 
+                        ['lambda', 
+                            ['x', 'y'], 
+                            ['x', 'y']
+                        ]
+                    ], 
+                    ['magic', 
+                        ['lambda', 
+                            ['x'],
+                            ['*', 'x', 2], 
+                        ],
+                        3
+                    ]
+                ], 
+            {}), 
+            6
+        );
+    });
+
+    test('lambda returns function', function() {
+        assert.deepEqual(
+            evalScheem(
+                ['begin', 
+                    ['define', 'magic', 
+                        ['lambda', 
+                            ['x'], 
+                            ['lambda',
+                                ['y'],
+                                ['*', 'x', 'y'] 
+                            ]
+                        ]
+                    ], 
+                    [
+                        ['magic', 5],
+                        2
+                    ]
+                ], 
+            {}), 
+            10
+        );
+    });
 });
 
 suite('parse', function() {
@@ -593,6 +715,19 @@ suite('evalScheemString', function() {
         assert.deepEqual(
             evalScheemString('\'(+ 2 3)'),
             ['+', 2, 3]
+        );
+    });
+
+    test('factorial', function() {
+        assert.deepEqual(
+            evalScheemString(
+                '(begin'+
+                '  (define factorial'+
+                '    (lambda (n)'+
+                '      (if (= n 0) 1'+
+                '          (* n (factorial (- n 1))))))'+
+                '(factorial 5))'),
+            120
         );
     });
 });

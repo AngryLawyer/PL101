@@ -151,13 +151,13 @@ SCHEEM = (function(){
       function parse_validchar() {
         var result0;
         
-        if (/^[0-9a-zA-Z_?!+\-=@#$%^&*\/.]/.test(input.charAt(pos))) {
+        if (/^[\-0-9a-zA-Z_?!+=@#$%^&*\/.<>]/.test(input.charAt(pos))) {
           result0 = input.charAt(pos);
           pos++;
         } else {
           result0 = null;
           if (reportFailures === 0) {
-            matchFailed("[0-9a-zA-Z_?!+\\-=@#$%^&*\\/.]");
+            matchFailed("[\\-0-9a-zA-Z_?!+=@#$%^&*\\/.<>]");
           }
         }
         return result0;
@@ -306,13 +306,13 @@ SCHEEM = (function(){
         var pos0;
         
         pos0 = pos;
-        if (input.substr(pos, 2) === ";;") {
-          result0 = ";;";
-          pos += 2;
+        if (input.charCodeAt(pos) === 59) {
+          result0 = ";";
+          pos++;
         } else {
           result0 = null;
           if (reportFailures === 0) {
-            matchFailed("\";;\"");
+            matchFailed("\";\"");
           }
         }
         if (result0 !== null) {
@@ -566,6 +566,67 @@ SCHEEM = (function(){
             if (result0 === null) {
               pos = pos0;
             }
+            if (result0 === null) {
+              pos0 = pos;
+              pos1 = pos;
+              result0 = [];
+              result1 = parse_whitespace();
+              while (result1 !== null) {
+                result0.push(result1);
+                result1 = parse_whitespace();
+              }
+              if (result0 !== null) {
+                if (/^[(]/.test(input.charAt(pos))) {
+                  result1 = input.charAt(pos);
+                  pos++;
+                } else {
+                  result1 = null;
+                  if (reportFailures === 0) {
+                    matchFailed("[(]");
+                  }
+                }
+                if (result1 !== null) {
+                  result2 = [];
+                  result3 = parse_whitespace();
+                  while (result3 !== null) {
+                    result2.push(result3);
+                    result3 = parse_whitespace();
+                  }
+                  if (result2 !== null) {
+                    if (/^[)]/.test(input.charAt(pos))) {
+                      result3 = input.charAt(pos);
+                      pos++;
+                    } else {
+                      result3 = null;
+                      if (reportFailures === 0) {
+                        matchFailed("[)]");
+                      }
+                    }
+                    if (result3 !== null) {
+                      result0 = [result0, result1, result2, result3];
+                    } else {
+                      result0 = null;
+                      pos = pos1;
+                    }
+                  } else {
+                    result0 = null;
+                    pos = pos1;
+                  }
+                } else {
+                  result0 = null;
+                  pos = pos1;
+                }
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+              if (result0 !== null) {
+                result0 = (function(offset) { return []; })(pos0);
+              }
+              if (result0 === null) {
+                pos = pos0;
+              }
+            }
           }
         }
         return result0;
@@ -703,7 +764,7 @@ SCHEEM = (function(){
   return result;
 })();
 
-
-if (typeof module !== 'undefined') {
+if (typeof module !== 'undefined')
+{
     module.exports.SCHEEM = SCHEEM;
 }

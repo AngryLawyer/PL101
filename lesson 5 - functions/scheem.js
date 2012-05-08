@@ -18,46 +18,60 @@ var ensureArgumentCount = function(expr, count, is_minimum) {
     }
 }
 
-var add_binding = function (env, v, val) {
+var lookup = function (env, v) {
 
-    env.outer = {
-        name: env.name,
-        value: env.value,
-        outer: env.outer
-    };
-    
-    env.name = v;
-    env.value = val;
-};
-
-var update = function (env, v, val) {
-    if (env.name === v)
+    if ('bindings' in env)
     {
-        env.value = val;
-    }
-    else
-    {
-        if (env.outer !== null)
+        if (v in env.bindings)
         {
-            update(env.outer, v, val);
+            return env.bindings[v];
         }
         else
         {
-            throw new Error('Undefined variable '+v);
+            return lookup(env.outer, v);
         }
     }
+
+    throw new Error('Undefined variable '+v);
 };
 
-var lookup = function (env, v) {
-    while(env !== null && env.name !== v)
+var add_binding = function (env, v, val) {
+
+    //Check we're not already defined
+    var up = env;
+    while('bindings' in up)
     {
-        env = env.outer;
-    }
-    if (env)
-    {
-        return env.value;
+        if (v in up.bindings)
+        {
+            throw new Error("Attempting to redefine variable "+v);
+        }
+        up = up.outer;
     }
 
+    if ('bindings' in env === false)
+    {
+        env.bindings = {};
+        env.outer = {};
+    }
+
+    env.bindings[v] = val;   
+};
+
+var update = function (env, v, val) {
+
+    if ('bindings' in env)
+    {
+        if (v in env.bindings)
+        {
+            env.bindings[v] = val;
+            return 0;
+        }
+        else
+        {
+            update(env.outer, v, val);
+        }
+    }
+    
     throw new Error('Undefined variable '+v);
 };
 
@@ -122,14 +136,6 @@ var evalScheem = function (expr, env) {
             return result;
         case 'define':
             ensureArgumentCount(expr, 2);
-            //Check that we're not destroying an extant variable
-            if (env !== null)
-            {
-                if (env.name === expr[1])
-                {
-                    throw new Error("Attempting to redefine variable "+expr[1]);
-                }
-            }
             add_binding(env, expr[1], evalScheem(expr[2], env));
             return 0;
         case 'set!':
@@ -203,28 +209,30 @@ var evalScheem = function (expr, env) {
             if (typeof firstArg !== 'object' || Array.isArray(firstArg) !== true)
                 throw new Error('Type error');
             return firstArg.slice(1);
+        case 'let-one':
+            var bindings = {};
+            bindings[expr[1]] = evalScheem(expr[2], env);
+            
+            return evalScheem(expr[3], {
+                bindings: bindings,
+                outer: env
+            });
         case 'lambda-one':
             return function(param) {
+                var bindings = {};
+                bindings[expr[1]] = param;
                 return evalScheem(expr[2], {
-                    name: expr[1],
-                    value: param,
+                    bindings: bindings,
                     outer: env
                 });
             };
         default:
-            // Simple application
-            var func = evalScheem(expr[0], env);
-            var arg = evalScheem(expr[1], env);
-            return func(arg);
+            return evalScheem(expr[0], env)(evalScheem(expr[1], env));
     }
 };
 
 var evalScheemString = function(Scheem) {
-    return evalScheem(SCHEEM.parse(Scheem), {
-        name: null,
-        value: null,
-        outer: null
-    });
+    return evalScheem(SCHEEM.parse(Scheem), {});
 };
 
 module.exports.evalScheem = evalScheem;

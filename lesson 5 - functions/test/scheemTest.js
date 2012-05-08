@@ -174,7 +174,7 @@ suite('basic operations', function() {
 suite('variables', function() {
     
     test('define valid', function() {
-        var env = {name: null, value: null, outer: null};
+        var env = {};
 
         assert.deepEqual(
             evalScheem(['define', 'x', 10], env),
@@ -182,20 +182,27 @@ suite('variables', function() {
         );
 
         assert.deepEqual(
-            {name: 'x', value: 10, outer: {name: null, value: null, outer: null}},
+            { bindings: {'x': 10}, outer: {}},
             env
         );
     });
 
     test('define invalid', function() {
-        var env = {name: 'x', value: 10, outer: null};
+        var env = { bindings: {'x': 10}, outer: {}};
+        expect(function() {
+            evalScheem(['define', 'x', 10], env);
+        }).to.throw();
+    });
+
+    test('define deep invalid', function() {
+        var env = { bindings: {'y': 10}, outer: { bindings: {'x': 10}, outer: {}}};
         expect(function() {
             evalScheem(['define', 'x', 10], env);
         }).to.throw();
     });
 
     test('set! valid', function() {
-        var env = {name: 'x', value: 20, outer: null};
+        var env = { bindings: {'x': 20}, outer: {}};
         
         assert.deepEqual(
             evalScheem(['set!', 'x', 10], env),
@@ -203,7 +210,7 @@ suite('variables', function() {
         );
 
         assert.deepEqual(
-            {name: 'x', value: 10, outer: null},
+            { bindings: {'x': 10}, outer: {}},
             env
         );
     });
@@ -217,7 +224,7 @@ suite('variables', function() {
 
     //Read
     test('read', function() {
-        var env = {name: 'x', value: 10, outer: null};
+        var env = { bindings: {'x': 10}, outer: {}};
         
         assert.deepEqual(
             evalScheem('x', env),
@@ -249,7 +256,7 @@ suite('begin', function() {
     });
 
     test('preserve', function() {
-        var env = {name: null, value: null, outer: null};
+        var env = {};
 
         assert.deepEqual(
             evalScheem(['begin', ['define', 'x', 10], 'x'], env),
@@ -258,7 +265,7 @@ suite('begin', function() {
     });
 
     test('invalid begin', function() {
-        var env = {name: null, value: null, outer: null};
+        var env = {};
 
         expect(function() {
             evalScheem(['begin'], env);
@@ -460,10 +467,33 @@ suite('lists', function() {
     });
 });
 
+suite('let', function() {
+    test('let-one', function() {
+        assert.deepEqual(
+            evalScheem(['let-one', 'x', ['+', 2, 2], 'x'], {}),
+            4
+        );
+    });
+
+    test('let-one nested', function() {
+        assert.deepEqual(
+            evalScheem(['let-one', 'x', 2, ['let-one', 'y', 2, ['+', 'x', 'y']]], {}),
+            4
+        );
+    });
+
+    test('let-one hiding', function() {
+        assert.deepEqual(
+            evalScheem(['let-one', 'x', 2, ['let-one', 'x', 6, 'x']], {}),
+            6
+        );
+    });
+});
+
 suite('functions', function() {
 
     test('single argument application', function() {
-        var env = {name: 'x', value: function(x) { return x + 1; }, outer: null};
+        var env = { bindings: {'x': function(x){ return x + 1; }}, outer: {}};
 
         assert.deepEqual(
             evalScheem(['x', 1], env),
@@ -471,12 +501,17 @@ suite('functions', function() {
         );
     });
 
-    test('setting a function', function() {
-        var env = {name: null, value: null, outer: null};
-
+    test('lambda-one', function() {
         assert.deepEqual(
-            evalScheem(['x', 1], env),
+            evalScheem([['lambda-one', 'x', ['+', 'x', 1]], 1], {}), 
             2
+        );
+    });
+
+    test('lambda-one nested', function() {
+        assert.deepEqual(
+            evalScheem([[['lambda-one', 'x', ['lambda-one', 'y', ['+', 'x', 'y']]], 10], 5], {}), 
+            15
         );
     });
 });

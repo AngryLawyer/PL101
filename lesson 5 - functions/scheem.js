@@ -159,6 +159,18 @@ var defaultEnvironment = {
             if (typeof x !== 'object' || Array.isArray(x) !== true)
                 throw new Error('Type error');
             return x.slice(1);
+        },
+        'alert': function(x) {
+            ensureArgumentCount(arguments, 1);
+            if (typeof module === 'undefined')
+            {
+                alert(x);
+            }
+            else
+            {
+                console.log(x);
+            }
+            return 0;
         }
     },
     outer: {}
@@ -255,6 +267,8 @@ var evalScheemString = function(Scheem) {
     return evalScheem(SCHEEM.parse(Scheem), {'bindings': {}, 'outer': defaultEnvironment});
 };
 
-module.exports.evalScheem = evalScheem;
-module.exports.evalScheemString = evalScheemString;
-module.exports.defaultEnvironment = defaultEnvironment;
+if (typeof module !== 'undefined') {
+    module.exports.evalScheem = evalScheem;
+    module.exports.evalScheemString = evalScheemString;
+    module.exports.defaultEnvironment = defaultEnvironment;
+}

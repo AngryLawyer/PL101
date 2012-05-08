@@ -653,6 +653,16 @@ suite('functions', function() {
     });
 });
 
+suite('alert', function() {
+    
+    test('alert', function() {
+        assert.deepEqual(
+            evalScheem(['alert', ['quote', 'testing']], DE), 
+            0
+        );
+    });
+});
+
 suite('parse', function() {
     test('a number', function() {
         assert.deepEqual(
@@ -736,5 +746,6 @@ suite('evalScheemString', function() {
             120
         );
     });
+    
 });
 

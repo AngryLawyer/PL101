@@ -498,6 +498,27 @@ suite('lists', function() {
             evalScheem(['cdr', 6], DE);
         }).to.throw();
     });
+
+    test('append', function() {
+        assert.deepEqual(
+            evalScheem(['append', ['quote', [4, 5]], ['quote', [6, 7]]], DE),
+            [4, 5, 6, 7]
+        );
+    });
+
+    test('null? (true)', function() {
+        assert.deepEqual(
+            evalScheem(['null?', ['quote', []]], DE),
+           '#t' 
+        );
+    });
+
+    test('null? (false)', function() {
+        assert.deepEqual(
+            evalScheem(['null?', ['quote', [1]]], DE),
+           '#f'
+        );
+    });
 });
 
 suite('let', function() {
@@ -745,6 +766,35 @@ suite('evalScheemString', function() {
                 '          (* n (factorial (- n 1))))))'+
                 '(factorial 5))'),
             120
+        );
+    });
+
+    test('fibonacci', function() {
+        assert.deepEqual(
+            evalScheemString(
+                '(begin'+
+                '  (define fib'+
+                '    (lambda (n)'+
+                '      (if (< n 2)'+
+                '      n'+
+                '      (+ (fib (- n 1)) (fib (- n 2))))))'+
+                '(fib 8))'),
+            21
+        );
+    });
+
+    test('reverse', function() {
+        assert.deepEqual(
+            evalScheemString(
+                '(begin'+
+                '  (define reverse'+
+                '    (lambda (x)'+
+                '      (if (null? x) ()'+
+                '        (append '+
+	            '          (reverse (cdr x))'+
+                '            (list (car x))))))'+
+                '(reverse \'(1 2 3 4 5)))'),
+            [5, 4, 3, 2, 1]
         );
     });
     

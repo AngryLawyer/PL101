@@ -4,6 +4,7 @@ if (typeof module !== 'undefined') {
     var evalScheem = require('../scheem').evalScheem;
     var evalScheemString = require('../scheem').evalScheemString;
     var SCHEEM = require('../parser').SCHEEM;
+    var DE = require('../scheem').defaultEnvironment;
     var expect = require('chai').expect;
 
 } else {
@@ -15,20 +16,20 @@ if (typeof module !== 'undefined') {
 suite('numbers', function() {
     test('a number', function() {
         assert.deepEqual(
-            evalScheem(3, {}),
+            evalScheem(3, DE),
             3
         );
     });
     test('zero', function() {
         assert.deepEqual(
-            evalScheem(0, {}),
+            evalScheem(0, DE),
             0
         );
     });
 
     test('a negative number', function() {
         assert.deepEqual(
-            evalScheem(-1, {}),
+            evalScheem(-1, DE),
             -1
         );
     });
@@ -37,136 +38,136 @@ suite('numbers', function() {
 suite('basic operations', function() {
     test('addition', function() {
         assert.deepEqual(
-            evalScheem(['+', 1, 2], {}), 
+            evalScheem(['+', 1, 2], DE), 
             3
         );
     });
 
     test('nested addition', function() {
         assert.deepEqual(
-            evalScheem(['+', 1, ['+', 3, 4]], {}), 
+            evalScheem(['+', 1, ['+', 3, 4]], DE), 
             8
         );
     });
 
     test('variadic addition', function() {
         assert.deepEqual(
-            evalScheem(['+', 1, 2, 3], {}), 
+            evalScheem(['+', 1, 2, 3], DE), 
             6
         );
     });
 
     test('invalid addition', function() {
         expect(function() {
-            evalScheem(['+', 1], {});
+            evalScheem(['+', 1], DE);
         }).to.throw();
     });
 
     test('subtraction', function() {
         assert.deepEqual(
-            evalScheem(['-', 2, 1], {}), 
+            evalScheem(['-', 2, 1], DE), 
             1
         );
     });
 
     test('nested subtraction', function() {
         assert.deepEqual(
-            evalScheem(['-', 10, ['-', 2, 1]], {}), 
+            evalScheem(['-', 10, ['-', 2, 1]], DE), 
             9
         );
     });
 
     test('variadic subtraction', function() {
         assert.deepEqual(
-            evalScheem(['-', 5, 2, 3], {}), 
+            evalScheem(['-', 5, 2, 3], DE), 
             0
         );
     });
 
     test('invalid addition', function() {
         expect(function() {
-            evalScheem(['-', 1], {});
+            evalScheem(['-', 1], DE);
         }).to.throw();
     });
 
     test('multiplication', function() {
         assert.deepEqual(
-            evalScheem(['*', 3, 2], {}), 
+            evalScheem(['*', 3, 2], DE), 
             6
         );
     });
 
     test('nested multiplication', function() {
         assert.deepEqual(
-            evalScheem(['*', 2, ['*', 3, 4]], {}), 
+            evalScheem(['*', 2, ['*', 3, 4]], DE), 
             24
         );
     });
 
     test('variadic multiplication', function() {
         assert.deepEqual(
-            evalScheem(['*', 2, 2, 3], {}), 
+            evalScheem(['*', 2, 2, 3], DE), 
             12
         );
     });
 
     test('invalid multiplication', function() {
         expect(function() {
-            evalScheem(['*', 1], {});
+            evalScheem(['*', 1], DE);
         }).to.throw();
     });
 
     test('division', function() {
         assert.deepEqual(
-            evalScheem(['/', 6, 2], {}), 
+            evalScheem(['/', 6, 2], DE), 
             3
         );
     });
 
     test('nested division', function() {
         assert.deepEqual(
-            evalScheem(['/', 10, ['/', 4, 2]], {}), 
+            evalScheem(['/', 10, ['/', 4, 2]], DE), 
             5
         );
     });
 
     test('variadic division', function() {
         assert.deepEqual(
-            evalScheem(['/', 20, 2, 2], {}), 
+            evalScheem(['/', 20, 2, 2], DE), 
             5
         );
     });
 
     test('invalid division', function() {
         expect(function() {
-            evalScheem(['/', 1], {});
+            evalScheem(['/', 1], DE);
         }).to.throw();
     });
 
     test('modulo', function() {
         assert.deepEqual(
-            evalScheem(['mod', 5, 2], {}), 
+            evalScheem(['mod', 5, 2], DE), 
             1
         );
     });
 
     test('nested modulo', function() {
         assert.deepEqual(
-            evalScheem(['mod', 5, ['mod', 5, 3]], {}), 
+            evalScheem(['mod', 5, ['mod', 5, 3]], DE), 
             1
         );
     });
 
     test('variadic modulo', function() {
         assert.deepEqual(
-            evalScheem(['mod', 10, 7, 2], {}), 
+            evalScheem(['mod', 10, 7, 2], DE), 
             1
         );
     });
 
     test('invalid modulo', function() {
         expect(function() {
-            evalScheem(['mod', 1], {});
+            evalScheem(['mod', 1], DE);
         }).to.throw();
     });
 });
@@ -174,7 +175,7 @@ suite('basic operations', function() {
 suite('variables', function() {
     
     test('define valid', function() {
-        var env = {};
+        var env = {'bindings': {}, 'outer': DE};
 
         assert.deepEqual(
             evalScheem(['define', 'x', 10], env),
@@ -182,27 +183,27 @@ suite('variables', function() {
         );
 
         assert.deepEqual(
-            { bindings: {'x': 10}, outer: {}},
+            { bindings: {'x': 10}, outer: DE},
             env
         );
     });
 
     test('define invalid', function() {
-        var env = { bindings: {'x': 10}, outer: {}};
+        var env = { bindings: {'x': 10}, outer: DE};
         expect(function() {
             evalScheem(['define', 'x', 10], env);
         }).to.throw();
     });
 
     test('define deep invalid', function() {
-        var env = { bindings: {'y': 10}, outer: { bindings: {'x': 10}, outer: {}}};
+        var env = { bindings: {'y': 10}, outer: { bindings: {'x': 10}, outer: DE}};
         expect(function() {
             evalScheem(['define', 'x', 10], env);
         }).to.throw();
     });
 
     test('set! valid', function() {
-        var env = { bindings: {'x': 20}, outer: {}};
+        var env = { bindings: {'x': 20}, outer: DE};
         
         assert.deepEqual(
             evalScheem(['set!', 'x', 10], env),
@@ -210,13 +211,13 @@ suite('variables', function() {
         );
 
         assert.deepEqual(
-            { bindings: {'x': 10}, outer: {}},
+            { bindings: {'x': 10}, outer: DE},
             env
         );
     });
 
     test('set! invalid', function() {
-        var env = {};
+        var env = {'bindings': {}, 'outer': DE};
         expect(function() {
             evalScheem(['set!', 'x', 10], env);
         }).to.throw();
@@ -224,7 +225,7 @@ suite('variables', function() {
 
     //Read
     test('read', function() {
-        var env = { bindings: {'x': 10}, outer: {}};
+        var env = { bindings: {'x': 10}, outer: DE};
         
         assert.deepEqual(
             evalScheem('x', env),
@@ -234,7 +235,7 @@ suite('variables', function() {
 
     test('read invalid', function() {
         expect(function() {
-            evalScheem('x', {});
+            evalScheem('x', DE);
         }).to.throw();
     });
 });
@@ -243,20 +244,20 @@ suite('begin', function() {
 
     test('single begin', function() {
         assert.deepEqual(
-            evalScheem(['begin', 4], {}),
+            evalScheem(['begin', 4], DE),
             4
         );
     });
 
     test('multi begin', function() {
         assert.deepEqual(
-            evalScheem(['begin', 4, 5, 6], {}),
+            evalScheem(['begin', 4, 5, 6], DE),
             6
         );
     });
 
     test('preserve', function() {
-        var env = {};
+        var env = {'bindings': {}, 'outer': DE};
 
         assert.deepEqual(
             evalScheem(['begin', ['define', 'x', 10], 'x'], env),
@@ -265,7 +266,7 @@ suite('begin', function() {
     });
 
     test('preserve part 2', function() {
-        var env = {};
+        var env = {'bindings': {}, 'outer': DE};
 
         assert.deepEqual(
             evalScheem(['begin', ['define', 'x', 10], ['+', 'x', 5]], env),
@@ -274,7 +275,7 @@ suite('begin', function() {
     });
 
     test('invalid begin', function() {
-        var env = {};
+        var env = DE;
 
         expect(function() {
             evalScheem(['begin'], env);
@@ -285,35 +286,35 @@ suite('begin', function() {
 suite('quote', function() {
     test('a number', function() {
         assert.deepEqual(
-            evalScheem(['quote', 3], {}),
+            evalScheem(['quote', 3], DE),
             3
         );
     });
 
     test('an atom', function() {
         assert.deepEqual(
-            evalScheem(['quote', 'dog'], {}),
+            evalScheem(['quote', 'dog'], DE),
             'dog'
         );
     });
 
     test('a list', function() {
         assert.deepEqual(
-            evalScheem(['quote', [1, 2, 3]], {}),
+            evalScheem(['quote', [1, 2, 3]], DE),
             [1, 2, 3]
         );
     });
 
     test('nested list', function() {
         assert.deepEqual(
-            evalScheem(['quote', [1, 2, ['quote', 3, 4]]], {}),
+            evalScheem(['quote', [1, 2, ['quote', 3, 4]]], DE),
             [1, 2, ['quote', 3, 4]]
         );
     });
 
     test('invalid quote', function() {
         expect(function() {
-            evalScheem(['quote', 1, 2], {});
+            evalScheem(['quote', 1, 2], DE);
         }).to.throw();
     });
 });
@@ -322,89 +323,90 @@ suite('comparators', function() {
 
     test('= true', function() {
         assert.deepEqual(
-            evalScheem(['=', 3, 3], {}),
+            evalScheem(['=', 3, 3], DE),
             '#t'
         );
     });
 
     test('= false', function() {
         assert.deepEqual(
-            evalScheem(['=', 3, 4], {}),
+            evalScheem(['=', 3, 4], DE),
             '#f'
         );
     });
 
     test('< true', function() {
         assert.deepEqual(
-            evalScheem(['<', 3, 4], {}),
+            evalScheem(['<', 3, 4], DE),
             '#t'
         );
     });
 
     test('< false', function() {
         assert.deepEqual(
-            evalScheem(['<', 3, 3], {}),
+            evalScheem(['<', 3, 3], DE),
             '#f'
         );
     });
 
     test('> true', function() {
         assert.deepEqual(
-            evalScheem(['>', 4, 3], {}),
+            evalScheem(['>', 4, 3], DE),
             '#t'
         );
     });
 
     test('> false', function() {
         assert.deepEqual(
-            evalScheem(['>', 3, 3], {}),
+            evalScheem(['>', 3, 3], DE),
             '#f'
         );
     });
 
     test('<= true', function() {
         assert.deepEqual(
-            evalScheem(['<=', 3, 3], {}),
+            evalScheem(['<=', 3, 3], DE),
             '#t'
         );
     });
 
     test('<= false', function() {
         assert.deepEqual(
-            evalScheem(['<=', 3, 2], {}),
+            evalScheem(['<=', 3, 2], DE),
             '#f'
         );
     });
 
     test('>= true', function() {
         assert.deepEqual(
-            evalScheem(['>=', 3, 3], {}),
+            evalScheem(['>=', 3, 3], DE),
             '#t'
         );
     });
 
     test('>= false', function() {
         assert.deepEqual(
-            evalScheem(['>=', 2, 3], {}),
+            evalScheem(['>=', 2, 3], DE),
             '#f'
         );
     });
 
     test('if true', function() {
         assert.deepEqual(
-            evalScheem(['if', ['>', 3, 2], ['quote', 'first'], ['quote', 'second']], {}),
+            evalScheem(['if', ['>', 3, 2], ['quote', 'first'], ['quote', 'second']], DE),
             'first'
         );
     });
 
     test('if false', function() {
         assert.deepEqual(
-            evalScheem(['if', ['>', 2, 3], ['quote', 'first'], ['quote', 'second']], {}),
+            evalScheem(['if', ['>', 2, 3], ['quote', 'first'], ['quote', 'second']], DE),
             'second'
         );
     });
 
     test('if with variables', function() {
+        var env = {'bindings': {}, 'outer': DE};
         assert.deepEqual(
             evalScheem(
                 ['begin', 
@@ -420,7 +422,7 @@ suite('comparators', function() {
                         ['quote', 'same'],
                         ['quote', 'different']
                     ]
-                ], {}),
+                ], env),
             'different'
         );
     });
@@ -431,7 +433,7 @@ suite('comparators', function() {
     {
         test('invalid '+comparators[i], function() {
             expect(function() {
-                evalScheem([comparators[i], 1, 2, 3, 4], {});
+                evalScheem([comparators[i], 1, 2, 3, 4], DE);
             }).to.throw();
         });
     }
@@ -441,58 +443,58 @@ suite('lists', function() {
 
     test('cons', function() {
         assert.deepEqual(
-            evalScheem(['cons', 3, ['quote', [4, 5]]], {}),
+            evalScheem(['cons', 3, ['quote', [4, 5]]], DE),
             [3, 4, 5]
         );
     });
 
     test('invalid cons (args)', function() {
         expect(function() {
-            evalScheem(['cons', 3, ['quote', [4, 5]], 4], {});
+            evalScheem(['cons', 3, ['quote', [4, 5]], 4], DE);
         }).to.throw();
     });
 
     test('invalid cons (type)', function() {
         expect(function() {
-            evalScheem(['cons', 3, 4], {});
+            evalScheem(['cons', 3, 4], DE);
         }).to.throw();
     });
 
     test('car', function() {
         assert.deepEqual(
-            evalScheem(['car', ['quote', [4, 5]]], {}),
+            evalScheem(['car', ['quote', [4, 5]]], DE),
             4
         );
     });
 
     test('invalid car (args)', function() {
         expect(function() {
-            evalScheem(['car', ['quote', [4, 5]], 6], {});
+            evalScheem(['car', ['quote', [4, 5]], 6], DE);
         }).to.throw();
     });
 
     test('invalid car (type)', function() {
         expect(function() {
-            evalScheem(['car', 6], {});
+            evalScheem(['car', 6], DE);
         }).to.throw();
     });
 
     test('cdr', function() {
         assert.deepEqual(
-            evalScheem(['cdr', ['quote', [4, 5]]], {}),
+            evalScheem(['cdr', ['quote', [4, 5]]], DE),
             [5]
         );
     });
 
     test('invalid cdr (args)', function() {
         expect(function() {
-            evalScheem(['cdr', ['quote', [4, 5]], 6], {});
+            evalScheem(['cdr', ['quote', [4, 5]], 6], DE);
         }).to.throw();
     });
 
     test('invalid cdr (type)', function() {
         expect(function() {
-            evalScheem(['cdr', 6], {});
+            evalScheem(['cdr', 6], DE);
         }).to.throw();
     });
 });
@@ -500,21 +502,21 @@ suite('lists', function() {
 suite('let', function() {
     test('let-one', function() {
         assert.deepEqual(
-            evalScheem(['let-one', 'x', ['+', 2, 2], 'x'], {}),
+            evalScheem(['let-one', 'x', ['+', 2, 2], 'x'], DE),
             4
         );
     });
 
     test('let-one nested', function() {
         assert.deepEqual(
-            evalScheem(['let-one', 'x', 2, ['let-one', 'y', 2, ['+', 'x', 'y']]], {}),
+            evalScheem(['let-one', 'x', 2, ['let-one', 'y', 2, ['+', 'x', 'y']]], DE),
             4
         );
     });
 
     test('let-one hiding', function() {
         assert.deepEqual(
-            evalScheem(['let-one', 'x', 2, ['let-one', 'x', 6, 'x']], {}),
+            evalScheem(['let-one', 'x', 2, ['let-one', 'x', 6, 'x']], DE),
             6
         );
     });
@@ -523,7 +525,7 @@ suite('let', function() {
 suite('functions', function() {
 
     test('single argument application', function() {
-        var env = { bindings: {'x': function(x){ return x + 1; }}, outer: {}};
+        var env = { bindings: {'x': function(x){ return x + 1; }}, outer: DE};
 
         assert.deepEqual(
             evalScheem(['x', 1], env),
@@ -532,7 +534,7 @@ suite('functions', function() {
     });
 
     test('multiple argument application', function() {
-        var env = { bindings: {'x': function(x, y, z){ return x + y + z; }}, outer: {}};
+        var env = { bindings: {'x': function(x, y, z){ return x + y + z; }}, outer: DE};
 
         assert.deepEqual(
             evalScheem(['x', 1, 2, 3], env),
@@ -542,14 +544,14 @@ suite('functions', function() {
 
     test('lambda-one', function() {
         assert.deepEqual(
-            evalScheem([['lambda-one', ['x'], ['+', 'x', 1]], 1], {}), 
+            evalScheem([['lambda-one', ['x'], ['+', 'x', 1]], 1], DE), 
             2
         );
     });
 
     test('lambda-one nested', function() {
         assert.deepEqual(
-            evalScheem([[['lambda-one', ['x'], ['lambda-one', 'y', ['+', 'x', 'y']]], 10], 5], {}), 
+            evalScheem([[['lambda-one', ['x'], ['lambda-one', 'y', ['+', 'x', 'y']]], 10], 5], DE), 
             15
         );
     });
@@ -557,26 +559,28 @@ suite('functions', function() {
     
     test('lambda', function() {
         assert.deepEqual(
-            evalScheem([['lambda', ['x'], ['+', 'x', 1]], 1], {}), 
+            evalScheem([['lambda', ['x'], ['+', 'x', 1]], 1], DE), 
             2
         );
     });
 
     test('lambda 2 args', function() {
         assert.deepEqual(
-            evalScheem([['lambda', ['x', 'y'], ['+', 'x', 'y']], 2, 3], {}), 
+            evalScheem([['lambda', ['x', 'y'], ['+', 'x', 'y']], 2, 3], DE), 
             5
         );
     });
 
     test('lambda in define', function() {
+        var env = {'bindings': {}, 'outer': DE};
         assert.deepEqual(
-            evalScheem(['begin', ['define', 'magic', ['lambda', ['x', 'y'], ['+', 'x', 'y']]], ['magic', 2, 3]], {}), 
+            evalScheem(['begin', ['define', 'magic', ['lambda', ['x', 'y'], ['+', 'x', 'y']]], ['magic', 2, 3]], env), 
             5
         );
     });
 
     test('complex lambda in define', function() {
+        var env = {'bindings': {}, 'outer': DE};
         assert.deepEqual(
             evalScheem(
                 ['begin', 
@@ -595,12 +599,13 @@ suite('functions', function() {
                         ]
                     ], 
                     ['magic', 2]
-                ], {}), 
+                ], env), 
             'it\'s not 10'
         );
     });
 
     test('lambda takes function', function() {
+        var env = {'bindings': {}, 'outer': DE};
         assert.deepEqual(
             evalScheem(
                 ['begin', 
@@ -618,12 +623,13 @@ suite('functions', function() {
                         3
                     ]
                 ], 
-            {}), 
+            env), 
             6
         );
     });
 
     test('lambda returns function', function() {
+        var env = {'bindings': {}, 'outer': DE};
         assert.deepEqual(
             evalScheem(
                 ['begin', 
@@ -641,7 +647,7 @@ suite('functions', function() {
                         2
                     ]
                 ], 
-            {}), 
+            env), 
             10
         );
     });

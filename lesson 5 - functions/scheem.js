@@ -227,7 +227,13 @@ var evalScheem = function (expr, env) {
                 });
             };
         default:
-            return evalScheem(expr[0], env)(evalScheem(expr[1], env));
+            var args = expr.slice(1);
+            //Flatten
+            for (var arg in args)
+            {
+                args[arg] = evalScheem(args[arg], env);
+            }
+            return evalScheem(expr[0], env).apply(null, args);
     }
 };
 

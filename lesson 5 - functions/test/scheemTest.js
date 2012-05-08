@@ -501,16 +501,25 @@ suite('functions', function() {
         );
     });
 
+    test('multiple argument application', function() {
+        var env = { bindings: {'x': function(x, y, z){ return x + y + z; }}, outer: {}};
+
+        assert.deepEqual(
+            evalScheem(['x', 1, 2, 3], env),
+            6
+        );
+    });
+
     test('lambda-one', function() {
         assert.deepEqual(
-            evalScheem([['lambda-one', 'x', ['+', 'x', 1]], 1], {}), 
+            evalScheem([['lambda-one', ['x'], ['+', 'x', 1]], 1], {}), 
             2
         );
     });
 
     test('lambda-one nested', function() {
         assert.deepEqual(
-            evalScheem([[['lambda-one', 'x', ['lambda-one', 'y', ['+', 'x', 'y']]], 10], 5], {}), 
+            evalScheem([[['lambda-one', ['x'], ['lambda-one', 'y', ['+', 'x', 'y']]], 10], 5], {}), 
             15
         );
     });

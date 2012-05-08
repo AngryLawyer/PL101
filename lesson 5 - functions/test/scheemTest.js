@@ -11,6 +11,7 @@ if (typeof module !== 'undefined') {
     // In browser assume already loaded by <script> tags
     var assert = chai.assert;
     var expect = chai.expect;
+    var DE = defaultEnvironment;
 }
 
 suite('numbers', function() {

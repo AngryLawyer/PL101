@@ -62,16 +62,37 @@ suite('binary search tree', function() {
 });
 
 suite('Fibonacci', function() {
-    //TODO: Fibonacci tests
+    test('small number', function() {
+        assert.deepEqual(fib(1), 1);
+        assert.deepEqual(fib(2), 1);
+        assert.deepEqual(fib(3), 2);
+        assert.deepEqual(fib(4), 3);
+        assert.deepEqual(fib(5), 5);
+        assert.deepEqual(fib(6), 8);
+    });
+
+    test('Large number', function() {
+        assert.deepEqual(fib(32), 2178309);
+    });
 });
 
-suite('List lookup', function() {
-    //TODO: list lookups
-});
+suite('Lists lookup', function() {
+    var smallList = generateList(10);
+    var bigList = generateList(20000);
 
-suite('List reversal', function() {
-    //TODO: List reversal
-});
+    test('list length', function() {
+        assert.deepEqual(listLength(smallList), 10);
+        assert.deepEqual(listLength(bigList), 20000);
+    });
 
-suite('ASTs', function() {
+    test('list lookup', function() {
+        assert.deepEqual(listLookup(8, smallList), 8);
+        assert.deepEqual(listLookup(18670, bigList), 18670);
+    });
+
+    test('list reversal', function() {
+        var bigReverse = listReverse(bigList);
+
+        assert.deepEqual(listLookup(1, bigReverse), 20000);
+    });
 });

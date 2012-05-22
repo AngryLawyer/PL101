@@ -1,7 +1,14 @@
 if (typeof module !== 'undefined') {
     // In Node.js load required modules
     var assert = require('chai').assert;
-    //var lookup = require('../tortoise').lookup;
+    var nodeCount = require('../cp').nodeCount;
+    var nodeInsert = require('../cp').nodeInsert;
+    var fib = require('../cp').fib;
+    var generateList = require('../cp').generateList;
+    var listLength = require('../cp').listLength;
+    var listLookup = require('../cp').listLookup;
+    var listReverse = require('../cp').listReverse;
+
 } else {
     // In browser assume loaded by <script>
     var assert = chai.assert;

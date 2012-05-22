@@ -83,23 +83,23 @@ suite('Fibonacci', function() {
     });
 });
 
-suite('Lists lookup', function() {
+suite('Lists', function() {
     var smallList = generateList(10);
     var bigList = generateList(20000);
 
-    test('list length', function() {
+    test('length', function() {
         assert.deepEqual(listLength(smallList), 10);
         assert.deepEqual(listLength(bigList), 20000);
     });
 
-    test('list lookup', function() {
-        assert.deepEqual(listLookup(8, smallList), 8);
-        assert.deepEqual(listLookup(18670, bigList), 18670);
+    test('lookup', function() {
+        assert.deepEqual(listLookup(8, smallList), 9);
+        assert.deepEqual(listLookup(18670, bigList), 18671);
     });
 
-    test('list reversal', function() {
+    test('reversal', function() {
         var bigReverse = listReverse(bigList);
 
-        assert.deepEqual(listLookup(1, bigReverse), 20000);
+        assert.deepEqual(listLookup(0, bigReverse), 20000);
     });
 });

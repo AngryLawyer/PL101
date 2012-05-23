@@ -1,8 +1,30 @@
 
 var nodeCount = function(tree) {
+    return trampoline(nodeCountThunk(tree, thunkValue));
 };
 
-var nodeInsert = function(value, tree) {
+var nodeCountThunk = function(tree, cont) {
+    if (tree.left === null && tree.right === null) {
+        return thunk(cont, [1]);
+    }
+    else {
+    
+        if (tree.left !== null && tree.right !== null) {
+            var new_cont = function(v) {
+                var new_cont_inner = function(v2) {
+                    return cont(v + v2 + 1);
+                };
+                return nodeCountThunk(tree.left, new_cont_inner);
+            };
+            return nodeCountThunk(tree.right, new_cont);
+        }
+        else {
+            var new_cont = function(v) {
+                return cont(v + 1);
+            };
+            return nodeCountThunk(((tree.left!==null)?tree.left:tree.right), new_cont);
+        }
+    }
 };
 
 var fib = function(n) {
@@ -128,7 +150,6 @@ var thunk = function (f, lst) {
 
 if (typeof module !== 'undefined') {
     module.exports.nodeCount = nodeCount;
-    module.exports.nodeInsert = nodeInsert;
     module.exports.fib = fib;
     module.exports.generateList = generateList;
     module.exports.listLength = listLength;

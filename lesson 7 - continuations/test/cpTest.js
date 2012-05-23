@@ -39,33 +39,6 @@ suite('binary search tree', function() {
         }), 5);
     });
 
-    test('inserts', function() {
-        assert.deepEqual(nodeInsert('f', {
-            data: 'd', 
-            left: {
-                data: 'b',
-                left: {data: 'a', left: null, right: null},
-                right: {data: 'c', left: null, right: null}
-            },
-            right: {
-                data: 'g',
-                left: null,
-                right: null
-            }
-        }), {
-            data: 'd', 
-            left: {
-                data: 'b',
-                left: {data: 'a', left: null, right: null},
-                right: {data: 'c', left: null, right: null}
-            },
-            right: {
-                data: 'g',
-                left: {data: 'f', left: null, right: null},
-                right: null
-            }
-        });
-    });
 });
 
 suite('Fibonacci', function() {

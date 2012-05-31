@@ -1,6 +1,26 @@
-var thunk;
-var step;
-var stepStart;
+var thunk = function (f) {
+    var args = Array.prototype.slice.call(arguments);
+    args.shift();
+    return { tag: "thunk", func: f, args: args };
+};
+
+var step = function (state) {
+    if (state.data.tag === "value") {
+        state.data = state.data.val;
+        state.done = true;
+    } else if (state.data.tag === "thunk") {
+        state.data = state.data.func.apply(null, state.data.args);
+    } else {
+        throw new Error("Bad thunk");
+    }
+};
+
+var stepStart = function (expr, env) {
+    return { 
+        data: evalExpr(expr, env, thunkValue),
+        done: false
+    };
+};
 
 var lookup = function (env, v) {
 
@@ -60,46 +80,136 @@ var add_binding = function (env, stmt, value) {
     env.bindings[stmt] = value;
 };
 
-var evalExpr = function(expr, env) {
+var evalExpr = function(expr, env, cont) {
 
     // Numbers evaluate to themselves
     if (typeof expr === 'number') {
-        return expr;
+        return thunk(expr, cont);
     }
 
     // Look at tag to see what to do
     switch(expr.tag) {
         case '+':
-            return evalExpr(expr.left, env) +
-                   evalExpr(expr.right, env);
+            return thunk(
+                evalExpr, expr.left, env,
+                function(v1) {
+                    return thunk(
+                        evalExpr, expr.right, env,
+                        function(v2) {
+                            return thunk(cont, v1 + v2);
+                        }
+                    );
+                }
+            );
         case '-':
-            return evalExpr(expr.left, env) -
-                   evalExpr(expr.right, env);
+            return thunk(
+                evalExpr, expr.left, env,
+                function(v1) {
+                    return thunk(
+                        evalExpr, expr.right, env,
+                        function(v2) {
+                            return thunk(cont, v1 - v2);
+                        }
+                    );
+                }
+            );
         case '*':
-            return evalExpr(expr.left, env) *
-                   evalExpr(expr.right, env);
+            return thunk(
+                evalExpr, expr.left, env,
+                function(v1) {
+                    return thunk(
+                        evalExpr, expr.right, env,
+                        function(v2) {
+                            return thunk(cont, v1 * v2);
+                        }
+                    );
+                }
+            );
         case '/':
-            return evalExpr(expr.left, env) /
-                   evalExpr(expr.right, env);
+            return thunk(
+                evalExpr, expr.left, env,
+                function(v1) {
+                    return thunk(
+                        evalExpr, expr.right, env,
+                        function(v2) {
+                            return thunk(cont, v1 / v2);
+                        }
+                    );
+                }
+            );
 
         case '=':
-            return evalExpr(expr.left, env) ==
-                   evalExpr(expr.right, env);
+            return thunk(
+                evalExpr, expr.left, env,
+                function(v1) {
+                    return thunk(
+                        evalExpr, expr.right, env,
+                        function(v2) {
+                            return thunk(cont, v1 == v2);
+                        }
+                    );
+                }
+            );
         case '!=':
-            return evalExpr(expr.left, env) !=
-                   evalExpr(expr.right, env);
+            return thunk(
+                evalExpr, expr.left, env,
+                function(v1) {
+                    return thunk(
+                        evalExpr, expr.right, env,
+                        function(v2) {
+                            return thunk(cont, v1 != v2);
+                        }
+                    );
+                }
+            );
         case '>':
-            return evalExpr(expr.left, env) >
-                   evalExpr(expr.right, env);
+            return thunk(
+                evalExpr, expr.left, env,
+                function(v1) {
+                    return thunk(
+                        evalExpr, expr.right, env,
+                        function(v2) {
+                            return thunk(cont, v1 > v2);
+                        }
+                    );
+                }
+            );
         case '<':
-            return evalExpr(expr.left, env) <
-                   evalExpr(expr.right, env);
+            return thunk(
+                evalExpr, expr.left, env,
+                function(v1) {
+                    return thunk(
+                        evalExpr, expr.right, env,
+                        function(v2) {
+                            return thunk(cont, v1 < v2);
+                        }
+                    );
+                }
+            );
         case '>=':
-            return evalExpr(expr.left, env) >=
-                   evalExpr(expr.right, env);
+            return thunk(
+                evalExpr, expr.left, env,
+                function(v1) {
+                    return thunk(
+                        evalExpr, expr.right, env,
+                        function(v2) {
+                            return thunk(cont, v1 >= v2);
+                        }
+                    );
+                }
+            );
         case '<=':
-            return evalExpr(expr.left, env) <=
-                   evalExpr(expr.right, env);
+            return thunk(
+                evalExpr, expr.left, env,
+                function(v1) {
+                    return thunk(
+                        evalExpr, expr.right, env,
+                        function(v2) {
+                            return thunk(cont, v1 <= v2);
+                        }
+                    );
+                }
+            );
         case 'call':
             return lookup(env, expr.name).apply(null, expr.args.map(function(item) {return evalExpr(item, env)}));
         case 'ident':
@@ -167,11 +277,25 @@ var evalStatements = function (stmts, env) {
         val = evalStatement(stmts[i], env);
     }
     return val;
-}
+};
+
+var trampoline = function(thk) {
+    while (true) {
+        if (thk.tag === "value") {
+            return thk.val;
+        } else if (thk.tag === "thunk") {
+            thk = thk.func.apply(null, thk.args);
+        } else {
+            throw new Error("Bad thunk");
+        }
+    }
+};
+
 
 if (typeof module !== 'undefined') {
     module.exports.evalExpr = evalExpr;
     module.exports.evalStatement = evalStatement;
     module.exports.evalStatements = evalStatements;
     module.exports.lookup = lookup;
+    module.exports.trampoline = trampoline;
 }

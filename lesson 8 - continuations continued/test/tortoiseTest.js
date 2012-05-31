@@ -7,6 +7,7 @@ if (typeof module !== 'undefined') {
     var evalExpr = require('../tortoise').evalExpr;
     var evalStatement = require('../tortoise').evalStatement;
     var evalStatements = require('../tortoise').evalStatements;
+    var trampoline = require('../tortoise').trampoline;
     var parse = PEG.buildParser(fs.readFileSync(
         'tortoise.peg', 'utf-8')).parse;
 } else {
@@ -263,7 +264,7 @@ suite('evalExpression', function () {
         outer: { bindings: {x: 3, z: 101}, outer: { } } };
     test('number', function () {
         var expr = parse('5', 'expression');
-        assert.deepEqual(evalExpr(expr, env), 5);
+        assert.deepEqual(trampoline(evalExpr(expr, env)), 5);
     });
     test('2<3', function () {
         var expr = parse('2 < 3', 'expression');

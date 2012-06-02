@@ -1,6 +1,39 @@
-var thunk;
-var step;
-var stepStart;
+var thunk = function (f) {
+    var args = Array.prototype.slice.call(arguments);
+    args.shift();
+    return { tag: "thunk", func: f, args: args };
+};
+
+var thunkValue = function (x) {
+    return { tag: "value", val: x };
+};
+
+var stepStart = function (expr, env) {
+    return { 
+        data: evalExpr(expr, env, thunkValue),
+        done: false
+    };
+};
+
+var step = function (state) {
+    // Your code here
+    if (state.data.tag === "value") {
+        state.data = state.data.val;
+        state.done = true;
+    } else if (state.data.tag === "thunk") {
+        state.data = state.data.func.apply(null, state.data.args);
+    } else {
+        throw new Error("Bad thunk");
+    }
+};
+
+var evalFull = function (expr, env) {
+    var state = stepStart(expr, env);
+    while(!state.done) {
+        step(state);
+    }
+    return state.data;
+};
 
 var lookup = function (env, v) {
 
@@ -170,6 +203,7 @@ var evalStatements = function (stmts, env) {
 }
 
 if (typeof module !== 'undefined') {
+    module.exports.evalFull = evalFull;
     module.exports.evalExpr = evalExpr;
     module.exports.evalStatement = evalStatement;
     module.exports.evalStatements = evalStatements;

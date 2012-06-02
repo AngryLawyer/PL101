@@ -359,7 +359,7 @@ suite('evalFull Statements', function () {
     });
 });
 
-suite('evalFull statementss', function () {
+suite('evalFull statements', function () {
     var env = { bindings: 
         {x: 5, y: 24, f: function(a) { return 3 * a + 1; } },
         outer: { bindings: {x: 3, z: 101}, outer: { } } };

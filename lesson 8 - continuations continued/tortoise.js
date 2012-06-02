@@ -93,50 +93,69 @@ var add_binding = function (env, stmt, value) {
     env.bindings[stmt] = value;
 };
 
-var evalExpr = function(expr, env) {
+var twoItemOp = function(left, right, env, cont, op) {
+    return thunk(
+        evalExpr, left, env,
+        function(v1) {
+            return thunk(
+                evalExpr, right, env,
+                function(v2) {
+                    return thunk(cont, op(v1, v2));
+                }
+            );
+        }
+    );
+};
+
+var oneItemOp = function(item, env, cont, op) {
+    return thunk(
+        evalExpr, item, env, 
+        function(v1) {
+            return thunk(cont, op(v1));
+        }
+    );
+};
+
+var evalExpr = function(expr, env, cont) {
 
     // Numbers evaluate to themselves
     if (typeof expr === 'number') {
-        return expr;
+        return thunk(cont, expr);
     }
 
     // Look at tag to see what to do
     switch(expr.tag) {
         case '+':
-            return evalExpr(expr.left, env) +
-                   evalExpr(expr.right, env);
+            return twoItemOp(expr.left, expr.right, env, cont, function(a, b) { return a + b; });
         case '-':
-            return evalExpr(expr.left, env) -
-                   evalExpr(expr.right, env);
+            return twoItemOp(expr.left, expr.right, env, cont, function(a, b) { return a - b; });
         case '*':
-            return evalExpr(expr.left, env) *
-                   evalExpr(expr.right, env);
+            return twoItemOp(expr.left, expr.right, env, cont, function(a, b) { return a * b; });
         case '/':
-            return evalExpr(expr.left, env) /
-                   evalExpr(expr.right, env);
-
+            return twoItemOp(expr.left, expr.right, env, cont, function(a, b) { return a / b; });
         case '=':
-            return evalExpr(expr.left, env) ==
-                   evalExpr(expr.right, env);
+            return twoItemOp(expr.left, expr.right, env, cont, function(a, b) { return a == b; });
         case '!=':
-            return evalExpr(expr.left, env) !=
-                   evalExpr(expr.right, env);
+            return twoItemOp(expr.left, expr.right, env, cont, function(a, b) { return a != b; });
         case '>':
-            return evalExpr(expr.left, env) >
-                   evalExpr(expr.right, env);
+            return twoItemOp(expr.left, expr.right, env, cont, function(a, b) { return a > b; });
         case '<':
-            return evalExpr(expr.left, env) <
-                   evalExpr(expr.right, env);
+            return twoItemOp(expr.left, expr.right, env, cont, function(a, b) { return a < b; });
         case '>=':
-            return evalExpr(expr.left, env) >=
-                   evalExpr(expr.right, env);
+            return twoItemOp(expr.left, expr.right, env, cont, function(a, b) { return a >= b; });
         case '<=':
-            return evalExpr(expr.left, env) <=
-                   evalExpr(expr.right, env);
+            return twoItemOp(expr.left, expr.right, env, cont, function(a, b) { return a <= b; });
         case 'call':
-            return lookup(env, expr.name).apply(null, expr.args.map(function(item) {return evalExpr(item, env)}));
+            var func = lookup(env, expr.name);
+            if (func instanceof function)
+            {
+            }
+            else
+            {
+                return func.apply(null, expr.args.map(function(item) { return evalExpr(item, env) }));
+            }
         case 'ident':
-            return lookup(env, expr.name);
+            return thunk(cont, lookup(env, expr.name));
     }
 }
 

@@ -8,15 +8,14 @@ var thunkValue = function (x) {
     return { tag: "value", val: x };
 };
 
-var stepStart = function (expr, env) {
+var stepStart = function (expr, env, startFunc) {
     return { 
-        data: evalExpr(expr, env, thunkValue),
+        data: startFunc(expr, env, thunkValue),
         done: false
     };
 };
 
 var step = function (state) {
-    // Your code here
     if (state.data.tag === "value") {
         state.data = state.data.val;
         state.done = true;
@@ -28,7 +27,15 @@ var step = function (state) {
 };
 
 var evalFull = function (expr, env) {
-    var state = stepStart(expr, env);
+    var state = stepStart(expr, env, evalExpr);
+    while(!state.done) {
+        step(state);
+    }
+    return state.data;
+};
+
+var evalFullStatement = function (expr, env) {
+    var state = stepStart(expr, env, evalStatement);
     while(!state.done) {
         step(state);
     }
@@ -107,15 +114,6 @@ var twoItemOp = function(left, right, env, cont, op) {
     );
 };
 
-var oneItemOp = function(item, env, cont, op) {
-    return thunk(
-        evalExpr, item, env, 
-        function(v1) {
-            return thunk(cont, op(v1));
-        }
-    );
-};
-
 var evalExpr = function(expr, env, cont) {
 
     // Numbers evaluate to themselves
@@ -147,52 +145,57 @@ var evalExpr = function(expr, env, cont) {
             return twoItemOp(expr.left, expr.right, env, cont, function(a, b) { return a <= b; });
         case 'call':
             var func = lookup(env, expr.name);
-            if (func instanceof function)
-            {
-            }
-            else
-            {
-                return func.apply(null, expr.args.map(function(item) { return evalExpr(item, env) }));
-            }
+            var args = expr.args.map(function(item) { return evalExpr(item, env, thunkValue) });
+            return thunk(func, args, env, cont);
         case 'ident':
             return thunk(cont, lookup(env, expr.name));
     }
 }
 
-var evalStatement = function (stmt, env) {
-    var val = undefined;
+var evalStatement = function (stmt, env, cont) {
     // Statements always have tags
     switch(stmt.tag) {
         // A single expression
         case 'ignore':
             // Just evaluate expression
-            return evalExpr(stmt.body, env);
+            return thunk(evalExpr, stmt.body, env, cont);
         // Repeat
         case 'repeat':
-            var count = evalExpr(stmt.expr, env);
-            var lastValue = 0;
-            
-            for (var i = 0; i < count; ++i)
-            {
-                lastValue = evalStatements(stmt.body, env);
-            }
+            return thunk(evalExpr, stmt.expr, env, function(count) {
+                if (count === 0) {
+                    return thunk(cont, 0);
+                }
+                var next = function(idx) {
+                    return function(v) {
+                        var nextId = idx+1;
+                        if(nextId === count) {
+                            return thunk(cont,v);
+                        }
+                        return thunk(evalStatements,stmt.body,env,next(nextId));
+                    };
+                };
 
-            return lastValue;
+                return thunk(evalStatements,stmt.body,env,next(0));
+            });
+
         // Declare new variable
         case 'var':
             // New variable gets default value of 0
             add_binding(env, stmt.name, 0);
-            return 0;
+            return thunk(cont, 0);
         case ':=':
             // Evaluate right hand side
-            val = evalExpr(stmt.right, env);
-            update(env, stmt.left, val);
-            return val;
+            return thunk(evalExpr, stmt.right, env, function(val) {
+                update(env, stmt.left, val);
+                return thunk(cont, val);
+            });
         case 'if':
-            if(evalExpr(stmt.expr, env)) {
-                val = evalStatements(stmt.body, env);
-            }
-            return val;
+            return thunk(evalExpr, stmt.expr, env, function(result) {
+                if (result) {
+                    return thunk(evalStatements, stmt.body, env, cont);
+                }
+                return thunk(cont, undefined);
+            });
         case 'define':
             // name args body
             var new_func = function() {
@@ -212,16 +215,21 @@ var evalStatement = function (stmt, env) {
     }
 };
 
-var evalStatements = function (stmts, env) {
-    var i;
-    var val = undefined;
-    for(i = 0; i < stmts.length; i++) {
-        val = evalStatement(stmts[i], env);
-    }
-    return val;
-}
+var evalStatements = function (stmts, env, cont) {
+    var next = function(idx) {
+        return function(v) {
+            var nextId = idx+1;
+            if(nextId === stmts.length) {
+                return thunk(cont,v);
+            }
+            return thunk(evalStatement,stmts[nextId],env,next(nextId));
+        };
+    };
+    return thunk(evalStatement,stmts[0],env,next(0));
+};
 
 if (typeof module !== 'undefined') {
+    module.exports.evalFullStatement = evalFullStatement;
     module.exports.evalFull = evalFull;
     module.exports.evalExpr = evalExpr;
     module.exports.evalStatement = evalStatement;

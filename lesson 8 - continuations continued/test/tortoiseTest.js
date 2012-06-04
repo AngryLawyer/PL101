@@ -5,8 +5,7 @@ if (typeof module !== 'undefined') {
     var fs = require('fs');
     var lookup = require('../tortoise').lookup;
     var evalFull = require('../tortoise').evalFull;
-    var evalFull = require('../tortoise').evalFull;
-    var evalFulls = require('../tortoise').evalFulls;
+    var evalFullStatement = require('../tortoise').evalFullStatement;
     var parse = PEG.buildParser(fs.readFileSync(
         'tortoise.peg', 'utf-8')).parse;
 } else {
@@ -259,7 +258,7 @@ suite('parse', function() {
 
 suite('evalFull', function () {
     var env = { bindings: 
-        {x: 5, y: 24, f: function(a) { return 3 * a + 1; } },
+        {x: 5, y: 24, f: function(cont, a) {return { tag: "thunk", func: cont, args: [ 3 * a + 1 ]} }},
         outer: { bindings: {x: 3, z: 101}, outer: { } } };
     test('number', function () {
         var expr = parse('5', 'expression');
@@ -307,54 +306,54 @@ suite('evalFull', function () {
     });
 });
 
-suite('evalFull Statements', function () {
+suite('evalFullStatement', function () {
     var env = { bindings: 
         {x: 5, y: 24, f: function(a) { return 3 * a + 1; } },
         outer: { bindings: {x: 3, z: 101}, outer: { } } };
     test('x;', function () {
         var stmt = parse('x;', 'statement');
-        assert.deepEqual(evalFull(stmt, env), 5);
+        assert.deepEqual(evalFullStatement(stmt, env), 5);
     });
     test('x := 3;', function () {
         var stmt = parse('x := 3;', 'statement');
-        assert.deepEqual(evalFull(stmt, env), 3);
+        assert.deepEqual(evalFullStatement(stmt, env), 3);
         assert.deepEqual(lookup(env, 'x'), 3);
     });
     test('x := f(3) + 1;', function () {
         var stmt = parse('x := f(3) + 1;', 'statement');
-        assert.deepEqual(evalFull(stmt, env), 11);
+        assert.deepEqual(evalFullStatement(stmt, env), 11);
         assert.deepEqual(lookup(env, 'x'), 11);
     });
     test('declare var', function () {
         var stmt = parse('var a;', 'statement');
-        assert.deepEqual(evalFull(stmt, env), 0);
+        assert.deepEqual(evalFullStatement(stmt, env), 0);
         assert.deepEqual(lookup(env, 'a'), 0);
     });
     test('repeat increment', function () {
-        evalFull(parse('x:=10;', 'statement'), env);
+        evalFullStatement(parse('x:=10;', 'statement'), env);
         var stmt = parse('repeat(4) { x := x + 1; }', 'statement');
-        assert.deepEqual(evalFull(stmt, env), 14);
+        assert.deepEqual(evalFullStatement(stmt, env), 14);
         assert.deepEqual(lookup(env, 'x'), 14);
     });
     test('repeat two statements', function () {
-        evalFull(parse('x:=10;', 'statement'), env);
+        evalFullStatement(parse('x:=10;', 'statement'), env);
         var stmt = parse('repeat(4) { x := x + 1; y:=x;}', 'statement');
-        assert.deepEqual(evalFull(stmt, env), 14);
+        assert.deepEqual(evalFullStatement(stmt, env), 14);
         assert.deepEqual(lookup(env, 'y'), 14);
     });
     test('simple if taken', function () {
         var stmt = parse('if(1 < 2) { x := 55; }', 'statement');
-        assert.deepEqual(evalFull(stmt, env), 55);
+        assert.deepEqual(evalFullStatement(stmt, env), 55);
         assert.deepEqual(lookup(env, 'x'), 55);
     });
     test('simple if not taken', function () {
         var stmt = parse('if(2 < 1) { x := 77; }', 'statement');
-        assert.deepEqual(evalFull(stmt, env), undefined);
+        assert.deepEqual(evalFullStatement(stmt, env), undefined);
         assert.notDeepEqual(lookup(env, 'x'), 77);
     });
     test('simple define', function () {
         var stmt = parse('define g(a) { x:=a; } g(-3);', 'statements');
-        assert.deepEqual(evalFulls(stmt, env), -3);
+        assert.deepEqual(evalFullStatement(stmt, env), -3);
         assert.deepEqual(lookup(env, 'x'), -3);
     });
 });

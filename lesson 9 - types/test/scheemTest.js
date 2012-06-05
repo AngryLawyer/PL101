@@ -261,7 +261,7 @@ suite('begin', function() {
         var env = {'bindings': {}, 'outer': DE};
 
         assert.deepEqual(
-            evalScheem(['begin', ['define', 'x', 10], 'x'], env),
+            evalScheem(['begin', [['define', 'x'], 10], 'x'], env),
             10
         );
     });
@@ -270,7 +270,7 @@ suite('begin', function() {
         var env = {'bindings': {}, 'outer': DE};
 
         assert.deepEqual(
-            evalScheem(['begin', ['define', 'x', 10], ['+', 'x', 5]], env),
+            evalScheem(['begin', [['define', 'x'], 10], [['+', 'x'], 5]], env),
             15
         );
     });
@@ -524,21 +524,21 @@ suite('lists', function() {
 suite('let', function() {
     test('let-one', function() {
         assert.deepEqual(
-            evalScheem([[['let-one', 'x'], ['+', 2, 2]], 'x'], DE),
+            evalScheem(['let-one', 'x', 4, 'x'], DE),
             4
         );
     });
 
     test('let-one nested', function() {
         assert.deepEqual(
-            evalScheem([[['let-one', 'x'], 2], [[['let-one', 'y'], 2], ['+', 'x', 'y']]], DE),
+            evalScheem(['let-one', 'x', 2, ['let-one', 'y', 2, [['+', 'x'], 'y']]], DE),
             4
         );
     });
 
     test('let-one hiding', function() {
         assert.deepEqual(
-            evalScheem([[['let-one', 'x'], 2], [[['let-one', 'x'], 6], 'x']], DE),
+            evalScheem(['let-one', 'x', 2, ['let-one', 'x', 6, 'x']], DE),
             6
         );
     });

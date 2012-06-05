@@ -280,7 +280,7 @@ var evalScheem = function (expr, env) {
                 }
                 return evalScheem(expr[3], env);
             case 'let-one':
-                ensureArgumentCount(expr, 3 + 1);
+                //ensureArgumentCount(expr, 3 + 1);
                 var bindings = {};
                 bindings[expr[1]] = evalScheem(expr[2], env);
                 

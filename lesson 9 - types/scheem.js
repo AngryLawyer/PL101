@@ -315,12 +315,13 @@ var evalScheem = function (expr, env) {
                 };
             default:
                 var args = expr.slice(1);
-                //Flatten
+                var returned = evalScheem(expr[0], env);
+
                 for (var arg in args)
                 {
-                    args[arg] = evalScheem(args[arg], env);
+                    returned = returned.call(null, evalScheem(args[arg], env));
                 }
-                return evalScheem(expr[0], env).apply(null, args);
+                return returned;
         }
     }
     else

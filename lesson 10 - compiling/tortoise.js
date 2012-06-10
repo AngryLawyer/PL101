@@ -1,173 +1,119 @@
-var lookup = function (env, v) {
-
-    if ('bindings' in env)
-    {
-        if (v in env.bindings)
-        {
-            return env.bindings[v];
-        }
-        else
-        {
-            return lookup(env.outer, v);
-        }
+var compileEnvironment = function (env) {
+    var builtString = '';
+    for (var i = 0; i < env.length; ++i) {
+        var left = env[i][0];
+        var right = env[i][1];
+        builtString += 'var ' + left + ' = ' + right.toString() + ';\n';
     }
-
-    throw new Error('Undefined variable '+v);
+    return builtString;
 };
 
-var update = function (env, left, v) {
-
-    if ('bindings' in env)
-    {
-        if (left in env.bindings)
-        {
-            env.bindings[left] = v;
-            return 0;
-        }
-        else
-        {
-            return update(env.outer, left, v);
-        }
-    }
-    
-    throw new Error('Undefined variable '+left);
+var compileBinaryOp = function(op, left, right) {
+    return '(' + compileExpr(left) + ')' + op + '(' + compileExpr(right) + ')';
 };
 
-var add_binding = function (env, stmt, value) {
-
-    //Redefine a variable if it already exists
-    var up = env;
-    while('bindings' in up)
-    {
-        if (stmt in up.bindings)
-        {
-            env[stmt] = value;
-            return 0;
-        }
-        up = up.outer;
+var repeat = function (num, func) {
+    var i;
+    var res;
+    for(i = 0; i < num; i++) {
+        res = func();
     }
-
-    if ('bindings' in env === false)
-    {
-        env.bindings = {};
-        env.outer = {};
-    }
-
-    env.bindings[stmt] = value;
+    return res;
 };
 
-var evalExpr = function(expr, env) {
-
-    // Numbers evaluate to themselves
+var compileExpr = function (expr) {
     if (typeof expr === 'number') {
-        return expr;
+        return expr.toString();
     }
-
-    // Look at tag to see what to do
     switch(expr.tag) {
         case '+':
-            return evalExpr(expr.left, env) +
-                   evalExpr(expr.right, env);
+            return compileBinaryOp('+', expr.left, expr.right);
         case '-':
-            return evalExpr(expr.left, env) -
-                   evalExpr(expr.right, env);
+            return compileBinaryOp('-', expr.left, expr.right);
         case '*':
-            return evalExpr(expr.left, env) *
-                   evalExpr(expr.right, env);
+            return compileBinaryOp('*', expr.left, expr.right);
         case '/':
-            return evalExpr(expr.left, env) /
-                   evalExpr(expr.right, env);
-
+            return compileBinaryOp('/', expr.left, expr.right);
         case '=':
-            return evalExpr(expr.left, env) ==
-                   evalExpr(expr.right, env);
+            return compileBinaryOp('==', expr.left, expr.right);
         case '!=':
-            return evalExpr(expr.left, env) !=
-                   evalExpr(expr.right, env);
+            return compileBinaryOp('!=', expr.left, expr.right);
         case '>':
-            return evalExpr(expr.left, env) >
-                   evalExpr(expr.right, env);
+            return compileBinaryOp('>', expr.left, expr.right);
         case '<':
-            return evalExpr(expr.left, env) <
-                   evalExpr(expr.right, env);
+            return compileBinaryOp('<', expr.left, expr.right);
         case '>=':
-            return evalExpr(expr.left, env) >=
-                   evalExpr(expr.right, env);
+            return compileBinaryOp('>=', expr.left, expr.right);
         case '<=':
-            return evalExpr(expr.left, env) <=
-                   evalExpr(expr.right, env);
-        case 'call':
-            return lookup(env, expr.name).apply(null, expr.args.map(function(item) {return evalExpr(item, env)}));
+            return compileBinaryOp('<=', expr.left, expr.right);
         case 'ident':
-            return lookup(env, expr.name);
-    }
-}
-
-var evalStatement = function (stmt, env) {
-    var val = undefined;
-    // Statements always have tags
-    switch(stmt.tag) {
-        // A single expression
-        case 'ignore':
-            // Just evaluate expression
-            return evalExpr(stmt.body, env);
-        // Repeat
-        case 'repeat':
-            var count = evalExpr(stmt.expr, env);
-            var lastValue = 0;
+            return expr.name;
+        case 'call':
+            var builtString = expr.name + '(';
             
-            for (var i = 0; i < count; ++i)
-            {
-                lastValue = evalStatements(stmt.body, env);
-            }
-
-            return lastValue;
-        // Declare new variable
-        case 'var':
-            // New variable gets default value of 0
-            add_binding(env, stmt.name, 0);
-            return 0;
-        case ':=':
-            // Evaluate right hand side
-            val = evalExpr(stmt.right, env);
-            update(env, stmt.left, val);
-            return val;
-        case 'if':
-            if(evalExpr(stmt.expr, env)) {
-                val = evalStatements(stmt.body, env);
-            }
-            return val;
-        case 'define':
-            // name args body
-            var new_func = function() {
-                // This function takes any number of arguments
-                var i;
-                var new_env;
-                var new_bindings;
-                new_bindings = { };
-                for(i = 0; i < stmt.args.length; i++) {
-                    new_bindings[stmt.args[i]] = arguments[i];
+            for (var i = 0; i < expr.args.length; ++i) {
+                
+                builtString += compileExpr(expr.args[i]);
+                
+                if ( i != expr.args.length - 1) {
+                    builtString += ', ';
                 }
-                new_env = { bindings: new_bindings, outer: env };
-                return evalStatements(stmt.body, new_env);
-            };
-            add_binding(env, stmt.name, new_func);
-            return 0;
+            }
+            return builtString + ')';
+        default:
+            throw new Error('Unknown tag ' + expr.tag);
     }
 };
 
-var evalStatements = function (stmts, env) {
-    var i;
-    var val = undefined;
-    for(i = 0; i < stmts.length; i++) {
-        val = evalStatement(stmts[i], env);
+var compileStatement = function(stmt) {
+    switch(stmt.tag) {
+        // A single expression
+        case 'repeat':
+            var builtString = 'var _res = repeat(';
+            builtString += compileExpr(stmt.expr);
+            builtString += ', function(){';
+            builtString += compileStatements(stmt.body, true);
+            return builtString + '});\n';
+        case 'if':
+            return '_res = undefined;\n' + 
+                'if(' + compileExpr(stmt.expr) + ') {\n' +
+                compileStatements(stmt.body, false) + '}\n';
+        case 'define':
+            return '_res = 0;\nvar ' + stmt.name + ' = function(' +
+                stmt.args.join(',') + ') {' +
+                compileStatements(stmt.body, true) + '};\n';
+        case 'var':
+            // Evaluates to 0
+            return '_res = 0;\nvar ' + stmt.name + ';\n';
+        case ':=':
+            return '_res = (' + stmt.left + ' = ' + compileExpr(stmt.right) + ');\n';
+        case 'ignore':
+            return '_res = (' + 
+                compileExpr(stmt.body) + ');\n';
+        default:
+            throw new Error('Unknown tag ' + stmt.tag);
     }
-    return val;
-}
+};
+
+var compileStatements = function (stmts, is_funcbody) {
+    // Your code here
+    var returnString = '';
+
+    for (var i = 0; i < stmts.length; ++i) {
+        returnString += compileStatement(stmts[i]);
+    }
+    
+    if (is_funcbody === true) {
+        returnString += 'return _res;\n';
+    }
+    
+    return returnString;
+};
 
 if (typeof module !== 'undefined') {
-    module.exports.evalExpr = evalExpr;
-    module.exports.evalStatement = evalStatement;
-    module.exports.evalStatements = evalStatements;
-    module.exports.lookup = lookup;
+    module.exports.compileExpr = compileExpr;
+    module.exports.compileStatement = compileStatement;
+    module.exports.compileStatements = compileStatements;
+    module.exports.compileEnvironment = compileEnvironment;
+    module.exports.repeat = repeat;
 }

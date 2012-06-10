@@ -35,17 +35,18 @@
         <div class="container">
             <div class="hero-unit">
                 <textarea id="editor" rows="10" cols="120">
-define pulse(x) {
-  repeat(x) {
-    forward(1);
+define circle() {
+  repeat(24) {
+    forward(10);
     penup();
-    forward(1);
+    forward(10);
     pendown();
+    right(15);
   }
 }
-repeat(360) {
-  pulse(1);
-  right(1);
+repeat(24) {
+  circle();
+  right(15);
 }
                 </textarea>
                 <p><a class="btn btn-primary btn-large" id="run">Run &raquo;</a></p>

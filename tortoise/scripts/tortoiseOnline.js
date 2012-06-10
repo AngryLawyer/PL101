@@ -14,6 +14,7 @@
         this.angle = 90;
         this.pen = true;
         this.turtleimg = undefined;
+        this.penColor = '#000';
         this.updateTurtle();
     };
     Turtle.prototype.updateTurtle = function () {
@@ -31,7 +32,7 @@
     Turtle.prototype.drawTo = function (x, y) {
         var x1 = this.x;
         var y1 = this.y;
-        var params = { "stroke-width": 4 };
+        var params = { "stroke-width": 4, "stroke": this.penColor};
         var path = this.paper.path(Raphael.format("M{0},{1}L{2},{3}",
             x1, y1, x, y)).attr(params);
     };
@@ -62,7 +63,13 @@
         this.pen = true;
     };
 
-    Turtle.prototype.color = function (colourName) {
+    Turtle.prototype.color = function (r, g, b) {
+
+        if (r > 255 || g > 255 || b > 255 || r < 0 || g < 0 || b < 0)
+            throw new Error('Color values out of range');
+        var rgb = ((r << 16) + (g << 8) + b).toString(16);
+        rgb = Array(6 + 1 - rgb.length).join('0') + rgb;
+        this.penColor = '#' + rgb;
     };
 
     Turtle.prototype.home = function () {
@@ -92,6 +99,12 @@
         });
         add_binding(init_env, 'pendown', function() {
             myTurtle.pendown();
+        });
+        add_binding(init_env, 'home', function() {
+            myTurtle.home();
+        });
+        add_binding(init_env, 'color', function(r, g, b) {
+            myTurtle.color(r, g, b);
         });
 
         return init_env;

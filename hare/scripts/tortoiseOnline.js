@@ -62,7 +62,13 @@
         this.pen = true;
     };
 
-    Turtle.prototype.color = function (colourName) {
+    Turtle.prototype.color = function (r, g, b) {
+
+        if (r > 255 || g > 255 || b > 255 || r < 0 || g < 0 || b < 0)
+            throw new Error('Color values out of range');
+        var rgb = ((r << 16) + (g << 8) + b).toString(16);
+        rgb = Array(6 + 1 - rgb.length).join('0') + rgb;
+        this.penColor = '#' + rgb;
     };
 
     Turtle.prototype.home = function () {
@@ -92,6 +98,12 @@
             }],
             ['pendown', function() {
                 myTurtle.pendown();
+            }],
+            ['home', function() {
+                myTurtle.home();
+            }],
+            ['color', function(r, g, b) {
+                myTurtle.color(r, g, b);
             }]
         ];
     }

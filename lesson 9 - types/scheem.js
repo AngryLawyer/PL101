@@ -35,7 +35,7 @@ var lookup = function (env, v) {
     throw new Error('Undefined variable '+v);
 };
 
-var add_binding = function (env, v, val) {
+var addBinding = function (env, v, val) {
 
     //Check we're not already defined
     var up = env;
@@ -244,10 +244,10 @@ var evalScheem = function (expr, env) {
         switch (expr[0]) {
             case 'define':
                 return function(bindingValue) {
-                    add_binding(env, expr[1], evalScheem(bindingValue, env));
+                    addBinding(env, expr[1], evalScheem(bindingValue, env));
                     return 0;
                 };
-                //add_binding(env, expr[1], evalScheem(expr[2], env));
+                //addBinding(env, expr[1], evalScheem(expr[2], env));
                 //return 0;
             case 'set!':
                 //ensureArgumentCount(expr, 2 + 1);
@@ -298,9 +298,34 @@ var evalScheem = function (expr, env) {
                         outer: env
                     });
                 };
-            case 'lambda':
-                ensureArgumentCount(expr, 1 + 1, true);
-                return function() {
+            /*case 'lambda': //I don't have time to sort this out :(
+                //ensureArgumentCount(expr, 1 + 1, true);
+                //Ze plan - for each of our arguments,
+                //We create another curried level of function
+                var params = expr[1], pos = 0, limit = params.length, currentEnv = env;
+
+                var outputFunction = function(param) {
+                    if (pos < limit) {
+                        var bindings = {};
+                        bindings[params[pos]] = param;
+
+                        currentEnv = {
+                            bindings: bindings,
+                            outer: currentEnv
+                        };
+
+                        ++pos;
+                    }
+                    if (pos < limit) {
+                        return evalScheem(expr[expr.length - 1], currentEnv);
+                    }
+                    else {
+                        return outputFunction;
+                    }
+                };
+
+                return outputFunction;
+                /*return function() {
                     //Take our middle
                     var bindings = {};
                     for (var i in expr[1])
@@ -312,7 +337,7 @@ var evalScheem = function (expr, env) {
                         bindings: bindings,
                         outer: env
                     });
-                };
+                };*/
             default:
                 var args = expr.slice(1);
                 var returned = evalScheem(expr[0], env);

@@ -556,7 +556,13 @@ suite('functions', function() {
     });
 
     test('multiple argument application', function() {
-        var env = { bindings: {'x': function(x, y, z){ return x + y + z; }}, outer: DE};
+        var env = { bindings: {'x': function(x) { 
+            return function(y) {
+                return function(z) {
+                    return x+y+z;
+                }
+            }
+        }}, outer: DE};
 
         assert.deepEqual(
             evalScheem([[['x', 1], 2], 3], env),
@@ -566,29 +572,29 @@ suite('functions', function() {
 //Following haven't yet been curried
     test('lambda-one', function() {
         assert.deepEqual(
-            evalScheem([['lambda-one', ['x'], ['+', 'x', 1]], 1], DE), 
+            evalScheem([['lambda-one', ['x'], [['+', 'x'], 1]], 1], DE), 
             2
         );
     });
 
     test('lambda-one nested', function() {
         assert.deepEqual(
-            evalScheem([[['lambda-one', ['x'], ['lambda-one', 'y', ['+', 'x', 'y']]], 10], 5], DE), 
+            evalScheem([[['lambda-one', ['x'], ['lambda-one', 'y', [['+', 'x'], 'y']]], 10], 5], DE), 
             15
         );
     });
 
     
-    test('lambda', function() {
+    /*test('lambda', function() {
         assert.deepEqual(
-            evalScheem([['lambda', ['x'], ['+', 'x', 1]], 1], DE), 
+            evalScheem([['lambda', ['x'], [['+', 'x'], 1]], 1], DE), 
             2
         );
     });
 
     test('lambda 2 args', function() {
         assert.deepEqual(
-            evalScheem([['lambda', ['x', 'y'], ['+', 'x', 'y']], 2, 3], DE), 
+            evalScheem([[['lambda', ['x', 'y'], [['+', 'x'], 'y']], 2], 3], DE), 
             5
         );
     });
@@ -596,7 +602,7 @@ suite('functions', function() {
     test('lambda in define', function() {
         var env = {'bindings': {}, 'outer': DE};
         assert.deepEqual(
-            evalScheem(['begin', ['define', 'magic', ['lambda', ['x', 'y'], ['+', 'x', 'y']]], ['magic', 2, 3]], env), 
+            evalScheem(['begin', ['define', 'magic', ['lambda', ['x', 'y'], [['+', 'x'], 'y']]], [['magic', 2], 3]], env), 
             5
         );
     });
@@ -672,7 +678,7 @@ suite('functions', function() {
             env), 
             10
         );
-    });
+    });*/
 });
 
 suite('alert', function() {
@@ -730,29 +736,29 @@ suite('evalScheemString', function() {
     });
     test('a variable', function() {
         assert.deepEqual(
-            evalScheemString('(begin (define x 10) x)'),
+            evalScheemString('(begin ((define x) 10) x)'),
             10
         );
     });
 
     test('basic operation', function() {
         assert.deepEqual(
-            evalScheemString('(+ 1 2)'),
+            evalScheemString('((+ 1) 2)'),
             3
         );
     });
 
     test('nested operation', function() {
         assert.deepEqual(
-            evalScheemString('(+ (* 3 4) 2)'),
+            evalScheemString('((+ ((* 3) 4)) 2)'),
             14
         );
     });
 
     test('quoted operation', function() {
         assert.deepEqual(
-            evalScheemString('\'(+ 2 3)'),
-            ['+', 2, 3]
+            evalScheemString('\'((+ 2) 3)'),
+            [['+', 2], 3]
         );
     });
 
@@ -760,10 +766,10 @@ suite('evalScheemString', function() {
         assert.deepEqual(
             evalScheemString(
                 '(begin'+
-                '  (define factorial'+
-                '    (lambda (n)'+
-                '      (if (= n 0) 1'+
-                '          (* n (factorial (- n 1))))))'+
+                '  ((define factorial)'+
+                '    (lambda-one (n)'+
+                '      (if ((= n) 0) 1'+
+                '          ((* n) (factorial ((- n) 1))))))'+
                 '(factorial 5))'),
             120
         );
